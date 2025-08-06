@@ -1,12 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import {
-  Save,
-  AlertCircle,
-  CheckCircle,
-  Loader2,
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Save, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
 
 import {
@@ -20,11 +15,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 function Admin() {
   const [infoString, setInfoString] = useState("");
@@ -39,18 +30,12 @@ function Admin() {
 
   useEffect(() => {
     if (message.text) {
-      const timer = setTimeout(
-        () => setMessage({ type: "", text: "" }),
-        5000
-      );
+      const timer = setTimeout(() => setMessage({ type: "", text: "" }), 5000);
       return () => clearTimeout(timer);
     }
   }, [message]);
 
-  const showMessage = (
-    type: "success" | "error",
-    text: string
-  ) => {
+  const showMessage = (type: "success" | "error", text: string) => {
     setMessage({ type, text });
   };
 
@@ -97,18 +82,12 @@ function Admin() {
       const result = await response.json();
       if (result.success) {
         setInfoExists(true);
-        showMessage(
-          "success",
-          `Info ${result.operation} successfully.`
-        );
+        showMessage("success", `Info ${result.operation} successfully.`);
       } else {
         showMessage("error", result.error || "Failed to save info.");
       }
     } catch (error) {
-      showMessage(
-        "error",
-        "Network error. Make sure the server is running."
-      );
+      showMessage("error", "Network error. Make sure the server is running.");
     } finally {
       setLoading(false);
     }
@@ -196,11 +175,7 @@ function Admin() {
             ) : (
               <Save className="mr-2 h-4 w-4" />
             )}
-            {loading
-              ? "Saving..."
-              : infoExists
-              ? "Update Info"
-              : "Create Info"}
+            {loading ? "Saving..." : infoExists ? "Update Info" : "Create Info"}
           </Button>
         </CardFooter>
       </Card>
