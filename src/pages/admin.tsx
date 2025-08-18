@@ -306,7 +306,7 @@ function timeAgo(date: Date) {
   ];
   let duration = s;
   let unit: Intl.RelativeTimeFormatUnit = "second";
-  for (let i = 0, acc = 1; i < intervals.length; i++) {
+  for (let i = 0; i < intervals.length; i++) {
     const [n, u] = intervals[i];
     if (duration < n) { unit = u; break; }
     duration = Math.floor(duration / n);
