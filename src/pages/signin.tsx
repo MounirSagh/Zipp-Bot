@@ -21,9 +21,14 @@ export default function Home() {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="absolute top-6 left-6 md:top-8 md:left-8 z-20 select-none"
         >
-          <span className="block text-3xl md:text-4xl font-semibold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-white/80 drop-shadow-sm">
-            Aivo<span className="text-white/80">.</span>
-          </span>
+          <div className="flex items-baseline gap-1">
+            <h1 className="text-2xl font-bold text-white font-merriweather">
+              ZIPP
+            </h1>
+            <h1 className="text-xl font-bold text-purple-300 font-merriweather">
+              Bot
+            </h1>
+          </div>
         </motion.div>
 
         {/* Content */}
@@ -44,9 +49,9 @@ export default function Home() {
 
             {/* Subhead */}
             <p className="text-pretty mt-6 mx-auto max-w-3xl text-base md:text-xl leading-relaxed tracking-[0.01em] text-white/85">
-              Upload your business details—operations, contacts, FAQs—and embed our AI agent with
-              a single line of code. Give customers instant answers without hunting through pages,
-              and boost satisfaction with every interaction.
+              Embed our AI agent with a single line of code. Provide customers with
+              instant answers, low-level technical support, and personalized
+              assistance without hunting through pages.
             </p>
 
             {/* CTA */}

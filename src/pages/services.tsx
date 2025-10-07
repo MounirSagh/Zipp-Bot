@@ -2,6 +2,36 @@ import { Layout } from "@/components/Layout";
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { servicesAPI, departmentsAPI, companyAPI } from "../services/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Plus, Edit3, Trash2, Settings, List, Contact } from "lucide-react";
 
 interface Service {
   id: number;
@@ -139,7 +169,9 @@ function Services() {
   if (!user) {
     return (
       <Layout>
-        <div>Loading...</div>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-muted-foreground">Loading...</div>
+        </div>
       </Layout>
     );
   }
@@ -147,30 +179,51 @@ function Services() {
   if (!company || departments.length === 0) {
     return (
       <Layout>
-        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-          <h1
-            style={{
-              fontSize: "2rem",
-              fontWeight: "bold",
-              marginBottom: "2rem",
-            }}
-          >
-            Services Management
-          </h1>
-          <div
-            style={{
-              padding: "2rem",
-              border: "2px dashed #ddd",
-              borderRadius: "8px",
-              textAlign: "center",
-              color: "#666",
-            }}
-          >
-            <p>
-              Please set up your company and create departments first before
-              managing services.
+        <div className="max-w-6xl mx-auto space-y-6">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight">Services</h1>
+            <p className="text-muted-foreground">
+              Manage your organization's services and offerings
             </p>
           </div>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center py-16 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+                <div className="space-y-3">
+                  {!company ? (
+                    <>
+                      <h3 className="text-lg font-medium text-muted-foreground">
+                        No Company Profile Found
+                      </h3>
+                      <p className="text-sm text-muted-foreground/75 max-w-md mx-auto">
+                        Please set up your company information first.
+                      </p>
+                      <Button variant="outline" asChild className="mt-4">
+                        <a href="/WjN2Y1hMTk5saEFneUZZeWZScW1uUjVkRkJoU0E9PQ/general">
+                          Setup Company Profile
+                        </a>
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="text-lg font-medium text-muted-foreground">
+                        No Departments Found
+                      </h3>
+                      <p className="text-sm text-muted-foreground/75 max-w-md mx-auto">
+                        Create departments first before adding services.
+                      </p>
+                      <Button variant="outline" asChild className="mt-4">
+                        <a href="/WjN2Y1hMTk5saEFneUZZeWZScW1uUjVkRkJoU0E9PQ/departments">
+                          Create Departments
+                        </a>
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </Layout>
     );
@@ -178,342 +231,390 @@ function Services() {
 
   return (
     <Layout>
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <h1
-          style={{ fontSize: "2rem", fontWeight: "bold", marginBottom: "2rem" }}
-        >
-          Services Management - {company.name}
-        </h1>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">Services</h1>
+          <p className="text-muted-foreground">
+            Manage {company.name}'s services and customer support offerings
+          </p>
+        </div>
 
-        {/* Create Service Section */}
-        <div
-          style={{
-            marginBottom: "2rem",
-            padding: "1rem",
-            border: "1px solid #ddd",
-            borderRadius: "8px",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "1rem",
-            }}
-          >
-            <h2 style={{ fontSize: "1.5rem" }}>Services</h2>
-            <button
-              onClick={() => setShowCreateForm(!showCreateForm)}
-              style={{
-                padding: "0.5rem 1rem",
-                backgroundColor: "#4CAF50",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
-            >
-              {showCreateForm ? "Cancel" : "Create Service"}
-            </button>
-          </div>
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
+              <List className="w-4 h-4" />
+              Service Overview
+            </TabsTrigger>
+            <TabsTrigger value="manage" className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Manage Services
+            </TabsTrigger>
+          </TabsList>
 
-          {showCreateForm && (
-            <div
-              style={{
-                marginBottom: "1rem",
-                padding: "1rem",
-                backgroundColor: "#f9f9f9",
-                borderRadius: "4px",
-              }}
-            >
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "1rem",
-                  marginBottom: "1rem",
-                }}
-              >
-                <input
-                  type="text"
-                  placeholder="Service Name"
-                  value={newService.name}
-                  onChange={(e) =>
-                    setNewService({ ...newService, name: e.target.value })
-                  }
-                  style={{
-                    padding: "0.5rem",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                  }}
-                />
-                <select
-                  value={newService.departmentId}
-                  onChange={(e) =>
-                    setNewService({
-                      ...newService,
-                      departmentId: e.target.value,
-                    })
-                  }
-                  style={{
-                    padding: "0.5rem",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                  }}
-                >
-                  <option value="">Select Department</option>
-                  {departments.map((department: any) => (
-                    <option key={department.id} value={department.id}>
-                      {department.name} ({department.company?.name})
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "1rem",
-                  marginBottom: "1rem",
-                }}
-              >
-                <input
-                  type="text"
-                  placeholder="Description"
-                  value={newService.description}
-                  onChange={(e) =>
-                    setNewService({
-                      ...newService,
-                      description: e.target.value,
-                    })
-                  }
-                  style={{
-                    padding: "0.5rem",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                  }}
-                />
-                <input
-                  type="text"
-                  placeholder="Contacts"
-                  value={newService.contacts}
-                  onChange={(e) =>
-                    setNewService({ ...newService, contacts: e.target.value })
-                  }
-                  style={{
-                    padding: "0.5rem",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                  }}
-                />
-              </div>
-              <button
-                onClick={createService}
-                style={{
-                  padding: "0.5rem 1rem",
-                  backgroundColor: "#008CBA",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                Create
-              </button>
-            </div>
-          )}
-
-          {/* Services List */}
-          <div style={{ display: "grid", gap: "1rem" }}>
-            {services.map((service: Service) => (
-              <div
-                key={service.id}
-                style={{
-                  padding: "1rem",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                  backgroundColor: "white",
-                }}
-              >
-                {editingService && editingService.id === service.id ? (
-                  <div>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: "1rem",
-                        marginBottom: "1rem",
-                      }}
-                    >
-                      <input
-                        type="text"
-                        value={editingService.name}
-                        onChange={(e) =>
-                          setEditingService({
-                            ...editingService,
-                            name: e.target.value,
-                          })
-                        }
-                        style={{
-                          padding: "0.5rem",
-                          border: "1px solid #ddd",
-                          borderRadius: "4px",
-                        }}
-                      />
-                      <select
-                        value={editingService.departmentId.toString()}
-                        onChange={(e) =>
-                          setEditingService({
-                            ...editingService,
-                            departmentId: parseInt(e.target.value),
-                          })
-                        }
-                        style={{
-                          padding: "0.5rem",
-                          border: "1px solid #ddd",
-                          borderRadius: "4px",
-                        }}
-                      >
-                        {departments.map((department: any) => (
-                          <option key={department.id} value={department.id}>
-                            {department.name} ({department.company?.name})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: "1rem",
-                        marginBottom: "1rem",
-                      }}
-                    >
-                      <input
-                        type="text"
-                        value={editingService.description}
-                        onChange={(e) =>
-                          setEditingService({
-                            ...editingService,
-                            description: e.target.value,
-                          })
-                        }
-                        style={{
-                          padding: "0.5rem",
-                          border: "1px solid #ddd",
-                          borderRadius: "4px",
-                        }}
-                      />
-                      <input
-                        type="text"
-                        value={editingService.contacts}
-                        onChange={(e) =>
-                          setEditingService({
-                            ...editingService,
-                            contacts: e.target.value,
-                          })
-                        }
-                        style={{
-                          padding: "0.5rem",
-                          border: "1px solid #ddd",
-                          borderRadius: "4px",
-                        }}
-                      />
-                    </div>
-                    <div style={{ display: "flex", gap: "1rem" }}>
-                      <button
-                        onClick={updateService}
-                        style={{
-                          padding: "0.5rem 1rem",
-                          backgroundColor: "#008CBA",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={cancelEdit}
-                        style={{
-                          padding: "0.5rem 1rem",
-                          backgroundColor: "#666",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Cancel
-                      </button>
+          <TabsContent value="overview" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Service Overview</CardTitle>
+                <CardDescription>
+                  View all services across your organization's departments
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {services.length === 0 ? (
+                  <div className="text-center py-12 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-medium text-muted-foreground">
+                        No Services Found
+                      </h3>
+                      <p className="text-sm text-muted-foreground/75">
+                        Create your first service to start managing customer
+                        support offerings.
+                      </p>
                     </div>
                   </div>
                 ) : (
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <div>
-                      <h3 style={{ margin: "0 0 0.5rem 0" }}>{service.name}</h3>
-                      <p style={{ margin: "0", color: "#666" }}>
-                        Department: {service.department?.name} (
-                        {service.department?.company?.name})
-                      </p>
-                      <p style={{ margin: "0.5rem 0 0 0", color: "#888" }}>
-                        {service.description}
-                      </p>
-                      <p style={{ margin: "0.5rem 0 0 0", color: "#888" }}>
-                        Contacts: {service.contacts}
-                      </p>
-                      <p
-                        style={{
-                          margin: "0.5rem 0 0 0",
-                          color: "#888",
-                          fontSize: "0.9rem",
-                        }}
+                  <div className="grid gap-4">
+                    {services.map((service: Service) => (
+                      <Card
+                        key={service.id}
+                        className="shadow-sm hover:shadow-md transition-shadow"
                       >
-                        Common Issues: {service.commonIssues?.length || 0}
-                      </p>
-                    </div>
-                    <div style={{ display: "flex", gap: "0.5rem" }}>
-                      <button
-                        onClick={() => startEdit(service)}
-                        style={{
-                          padding: "0.5rem 1rem",
-                          backgroundColor: "#FF9800",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => deleteService(service.id)}
-                        style={{
-                          padding: "0.5rem 1rem",
-                          backgroundColor: "#f44336",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Delete
-                      </button>
-                    </div>
+                        <CardContent className="pt-6">
+                          <div className="flex items-start justify-between">
+                            <div className="space-y-3 flex-1">
+                              <div className="flex items-center gap-3">
+                                <h3 className="text-xl font-semibold">
+                                  {service.name}
+                                </h3>
+                                <Badge variant="secondary" className="text-xs">
+                                  {service.department?.name}
+                                </Badge>
+                              </div>
+                              <p className="text-muted-foreground leading-relaxed">
+                                {service.description}
+                              </p>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Contact className="w-4 h-4" />
+                                <span>{service.contacts}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="text-xs">
+                                  {service.commonIssues?.length || 0} common
+                                  issues
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
                 )}
-              </div>
-            ))}
-          </div>
-        </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="manage" className="space-y-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                <div>
+                  <CardTitle>Manage Services</CardTitle>
+                  <CardDescription>
+                    Create, edit, and delete services in your organization
+                  </CardDescription>
+                </div>
+                <Button
+                  onClick={() => setShowCreateForm(!showCreateForm)}
+                  variant={showCreateForm ? "outline" : "default"}
+                  size="sm"
+                  className="gap-2"
+                >
+                  {showCreateForm ? (
+                    "Cancel"
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4" />
+                      New Service
+                    </>
+                  )}
+                </Button>
+              </CardHeader>
+
+              <CardContent className="space-y-6">
+                {showCreateForm && (
+                  <div className="space-y-6 p-6 bg-muted/30 rounded-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">
+                          Service Name
+                        </label>
+                        <Input
+                          placeholder="e.g. Technical Support, Customer Service"
+                          value={newService.name}
+                          onChange={(e) =>
+                            setNewService({
+                              ...newService,
+                              name: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">
+                          Department
+                        </label>
+                        <Select
+                          value={newService.departmentId}
+                          onValueChange={(value) =>
+                            setNewService({
+                              ...newService,
+                              departmentId: value,
+                            })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select department" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {departments.map((department: any) => (
+                              <SelectItem
+                                key={department.id}
+                                value={department.id.toString()}
+                              >
+                                {department.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Description</label>
+                      <Input
+                        placeholder="Describe what this service offers"
+                        value={newService.description}
+                        onChange={(e) =>
+                          setNewService({
+                            ...newService,
+                            description: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        Contact Information
+                      </label>
+                      <Input
+                        placeholder="e.g. support@company.com, +1-555-0123"
+                        value={newService.contacts}
+                        onChange={(e) =>
+                          setNewService({
+                            ...newService,
+                            contacts: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <Button onClick={createService} className="gap-2">
+                      <Plus className="w-4 h-4" />
+                      Create Service
+                    </Button>
+                  </div>
+                )}
+
+                {services.length === 0 ? (
+                  <div className="text-center py-12 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-medium text-muted-foreground">
+                        No Services Found
+                      </h3>
+                      <p className="text-sm text-muted-foreground/75">
+                        Create your first service to get started.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid gap-4">
+                    {services.map((service: Service) => (
+                      <Card key={service.id} className="shadow-sm">
+                        <CardContent className="pt-6">
+                          {editingService &&
+                          editingService.id === service.id ? (
+                            <div className="space-y-4">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                  <label className="text-sm font-medium">
+                                    Service Name
+                                  </label>
+                                  <Input
+                                    value={editingService.name}
+                                    onChange={(e) =>
+                                      setEditingService({
+                                        ...editingService,
+                                        name: e.target.value,
+                                      })
+                                    }
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="text-sm font-medium">
+                                    Department
+                                  </label>
+                                  <Select
+                                    value={editingService.departmentId.toString()}
+                                    onValueChange={(value) =>
+                                      setEditingService({
+                                        ...editingService,
+                                        departmentId: parseInt(value),
+                                      })
+                                    }
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {departments.map((department: any) => (
+                                        <SelectItem
+                                          key={department.id}
+                                          value={department.id.toString()}
+                                        >
+                                          {department.name}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium">
+                                  Description
+                                </label>
+                                <Input
+                                  value={editingService.description}
+                                  onChange={(e) =>
+                                    setEditingService({
+                                      ...editingService,
+                                      description: e.target.value,
+                                    })
+                                  }
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium">
+                                  Contact Information
+                                </label>
+                                <Input
+                                  value={editingService.contacts}
+                                  onChange={(e) =>
+                                    setEditingService({
+                                      ...editingService,
+                                      contacts: e.target.value,
+                                    })
+                                  }
+                                />
+                              </div>
+                              <div className="flex gap-2">
+                                <Button onClick={updateService} size="sm">
+                                  Save Changes
+                                </Button>
+                                <Button
+                                  onClick={cancelEdit}
+                                  variant="outline"
+                                  size="sm"
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-start justify-between">
+                              <div className="space-y-3 flex-1">
+                                <div className="flex items-center gap-3">
+                                  <h3 className="text-xl font-semibold">
+                                    {service.name}
+                                  </h3>
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-xs"
+                                  >
+                                    {service.department?.name}
+                                  </Badge>
+                                </div>
+                                <p className="text-muted-foreground leading-relaxed">
+                                  {service.description}
+                                </p>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <Contact className="w-4 h-4" />
+                                  <span>{service.contacts}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline" className="text-xs">
+                                    {service.commonIssues?.length || 0} common
+                                    issues
+                                  </Badge>
+                                </div>
+                              </div>
+                              <div className="flex gap-2 ml-4">
+                                <Button
+                                  onClick={() => startEdit(service)}
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-2"
+                                >
+                                  <Edit3 className="w-4 h-4" />
+                                  Edit
+                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      className="gap-2"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                      Delete
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>
+                                        Delete Service
+                                      </AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Are you sure you want to delete "
+                                        {service.name}"? This action cannot be
+                                        undone and will also remove all
+                                        associated common issues.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>
+                                        Cancel
+                                      </AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() =>
+                                          deleteService(service.id)
+                                        }
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      >
+                                        Delete Service
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </Layout>
   );

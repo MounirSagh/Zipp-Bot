@@ -2,6 +2,29 @@ import { Layout } from "@/components/Layout";
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { departmentsAPI, companyAPI } from "../services/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Plus, Edit3, Trash2, Users, Settings } from "lucide-react";
 
 interface Department {
   id: number;
@@ -113,7 +136,9 @@ function Departments() {
   if (!user) {
     return (
       <Layout>
-        <div>Loading...</div>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-muted-foreground">Loading...</div>
+        </div>
       </Layout>
     );
   }
@@ -121,30 +146,34 @@ function Departments() {
   if (!company) {
     return (
       <Layout>
-        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-          <h1
-            style={{
-              fontSize: "2rem",
-              fontWeight: "bold",
-              marginBottom: "2rem",
-            }}
-          >
-            Departments Management
-          </h1>
-          <div
-            style={{
-              padding: "2rem",
-              border: "2px dashed #ddd",
-              borderRadius: "8px",
-              textAlign: "center",
-              color: "#666",
-            }}
-          >
-            <p>
-              Please set up your company information first in the Dashboard
-              before managing departments.
+        <div className="max-w-6xl mx-auto space-y-6">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight">Departments</h1>
+            <p className="text-muted-foreground">
+              Manage your organization's departments and structure
             </p>
           </div>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center py-16 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+                <div className="space-y-3">
+                  <h3 className="text-lg font-medium text-muted-foreground">
+                    No Company Profile Found
+                  </h3>
+                  <p className="text-sm text-muted-foreground/75 max-w-md mx-auto">
+                    Please set up your company information first before managing
+                    departments.
+                  </p>
+                  <Button variant="outline" asChild className="mt-4">
+                    <a href="/WjN2Y1hMTk5saEFneUZZeWZScW1uUjVkRkJoU0E9PQ/general">
+                      Setup Company Profile
+                    </a>
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </Layout>
     );
@@ -152,253 +181,285 @@ function Departments() {
 
   return (
     <Layout>
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <h1
-          style={{ fontSize: "2rem", fontWeight: "bold", marginBottom: "2rem" }}
-        >
-          Departments Management - {company.name}
-        </h1>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">Departments</h1>
+          <p className="text-muted-foreground">
+            Manage {company.name}'s organizational structure and departments
+          </p>
+        </div>
 
-        {/* Create Department Section */}
-        <div
-          style={{
-            marginBottom: "2rem",
-            padding: "1rem",
-            border: "1px solid #ddd",
-            borderRadius: "8px",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "1rem",
-            }}
-          >
-            <h2 style={{ fontSize: "1.5rem" }}>Departments</h2>
-            <button
-              onClick={() => setShowCreateForm(!showCreateForm)}
-              style={{
-                padding: "0.5rem 1rem",
-                backgroundColor: "#4CAF50",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
-            >
-              {showCreateForm ? "Cancel" : "Create Department"}
-            </button>
-          </div>
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Department Overview
+            </TabsTrigger>
+            <TabsTrigger value="manage" className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Manage Departments
+            </TabsTrigger>
+          </TabsList>
 
-          {showCreateForm && (
-            <div
-              style={{
-                marginBottom: "1rem",
-                padding: "1rem",
-                backgroundColor: "#f9f9f9",
-                borderRadius: "4px",
-              }}
-            >
-              <div
-                style={{
-                  marginBottom: "1rem",
-                }}
-              >
-                <input
-                  type="text"
-                  placeholder="Department Name"
-                  value={newDepartment.name}
-                  onChange={(e) =>
-                    setNewDepartment({ ...newDepartment, name: e.target.value })
-                  }
-                  style={{
-                    width: "100%",
-                    padding: "0.5rem",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                  }}
-                />
-              </div>
-              <input
-                type="text"
-                placeholder="Description"
-                value={newDepartment.description}
-                onChange={(e) =>
-                  setNewDepartment({
-                    ...newDepartment,
-                    description: e.target.value,
-                  })
-                }
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                  marginBottom: "1rem",
-                }}
-              />
-              <button
-                onClick={createDepartment}
-                style={{
-                  padding: "0.5rem 1rem",
-                  backgroundColor: "#008CBA",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                Create
-              </button>
-            </div>
-          )}
-
-          {/* Departments List */}
-          <div style={{ display: "grid", gap: "1rem" }}>
-            {departments.map((department: any) => (
-              <div
-                key={department.id}
-                style={{
-                  padding: "1rem",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                  backgroundColor: "white",
-                }}
-              >
-                {editingDepartment && editingDepartment.id === department.id ? (
-                  <div>
-                    <div
-                      style={{
-                        marginBottom: "1rem",
-                      }}
-                    >
-                      <input
-                        type="text"
-                        value={editingDepartment.name}
-                        onChange={(e) =>
-                          setEditingDepartment({
-                            ...editingDepartment,
-                            name: e.target.value,
-                          })
-                        }
-                        style={{
-                          width: "100%",
-                          padding: "0.5rem",
-                          border: "1px solid #ddd",
-                          borderRadius: "4px",
-                        }}
-                      />
-                    </div>
-                    <input
-                      type="text"
-                      value={editingDepartment.description}
-                      onChange={(e) =>
-                        setEditingDepartment({
-                          ...editingDepartment,
-                          description: e.target.value,
-                        })
-                      }
-                      style={{
-                        width: "100%",
-                        padding: "0.5rem",
-                        border: "1px solid #ddd",
-                        borderRadius: "4px",
-                        marginBottom: "1rem",
-                      }}
-                    />
-                    <div style={{ display: "flex", gap: "1rem" }}>
-                      <button
-                        onClick={updateDepartment}
-                        style={{
-                          padding: "0.5rem 1rem",
-                          backgroundColor: "#008CBA",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={cancelEdit}
-                        style={{
-                          padding: "0.5rem 1rem",
-                          backgroundColor: "#666",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Cancel
-                      </button>
+          <TabsContent value="overview" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Department Overview</CardTitle>
+                <CardDescription>
+                  View all departments in your organization
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {departments.length === 0 ? (
+                  <div className="text-center py-12 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-medium text-muted-foreground">
+                        No Departments Found
+                      </h3>
+                      <p className="text-sm text-muted-foreground/75">
+                        Create your first department to get started with
+                        organizing your company structure.
+                      </p>
                     </div>
                   </div>
                 ) : (
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <div>
-                      <h3 style={{ margin: "0 0 0.5rem 0" }}>
-                        {department.name}
-                      </h3>
-                      <p style={{ margin: "0", color: "#666" }}>
-                        Company: {department.company?.name}
-                      </p>
-                      <p style={{ margin: "0.5rem 0 0 0", color: "#888" }}>
-                        {department.description}
-                      </p>
-                      <p
-                        style={{
-                          margin: "0.5rem 0 0 0",
-                          color: "#888",
-                          fontSize: "0.9rem",
-                        }}
+                  <div className="grid gap-4">
+                    {departments.map((department: any) => (
+                      <Card
+                        key={department.id}
+                        className="shadow-sm hover:shadow-md transition-shadow"
                       >
-                        Services: {department.services?.length || 0}
-                      </p>
-                    </div>
-                    <div style={{ display: "flex", gap: "0.5rem" }}>
-                      <button
-                        onClick={() => startEdit(department)}
-                        style={{
-                          padding: "0.5rem 1rem",
-                          backgroundColor: "#FF9800",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => deleteDepartment(department.id)}
-                        style={{
-                          padding: "0.5rem 1rem",
-                          backgroundColor: "#f44336",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Delete
-                      </button>
-                    </div>
+                        <CardContent className="pt-6">
+                          <div className="flex items-start justify-between">
+                            <div className="space-y-3 flex-1">
+                              <div className="flex items-center gap-3">
+                                <h3 className="text-xl font-semibold">
+                                  {department.name}
+                                </h3>
+                                <Badge variant="secondary" className="text-xs">
+                                  {department.services?.length || 0} services
+                                </Badge>
+                              </div>
+                              <p className="text-muted-foreground leading-relaxed">
+                                {department.description}
+                              </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
                 )}
-              </div>
-            ))}
-          </div>
-        </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="manage" className="space-y-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                <div>
+                  <CardTitle>Manage Departments</CardTitle>
+                  <CardDescription>
+                    Create, edit, and delete departments in your organization
+                  </CardDescription>
+                </div>
+                <Button
+                  onClick={() => setShowCreateForm(!showCreateForm)}
+                  variant={showCreateForm ? "outline" : "default"}
+                  size="sm"
+                  className="gap-2"
+                >
+                  {showCreateForm ? (
+                    "Cancel"
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4" />
+                      New Department
+                    </>
+                  )}
+                </Button>
+              </CardHeader>
+
+              <CardContent className="space-y-6">
+                {showCreateForm && (
+                  <div className="space-y-6 p-6 bg-muted/30 rounded-lg">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">
+                          Department Name
+                        </label>
+                        <Input
+                          placeholder="e.g. Customer Support, Sales, Engineering"
+                          value={newDepartment.name}
+                          onChange={(e) =>
+                            setNewDepartment({
+                              ...newDepartment,
+                              name: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">
+                          Description
+                        </label>
+                        <Input
+                          placeholder="Describe the department's role and responsibilities"
+                          value={newDepartment.description}
+                          onChange={(e) =>
+                            setNewDepartment({
+                              ...newDepartment,
+                              description: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <Button onClick={createDepartment} className="gap-2">
+                      <Plus className="w-4 h-4" />
+                      Create Department
+                    </Button>
+                  </div>
+                )}
+
+                {departments.length === 0 ? (
+                  <div className="text-center py-12 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-medium text-muted-foreground">
+                        No Departments Found
+                      </h3>
+                      <p className="text-sm text-muted-foreground/75">
+                        Create your first department to get started.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid gap-4">
+                    {departments.map((department: any) => (
+                      <Card key={department.id} className="shadow-sm">
+                        <CardContent className="pt-6">
+                          {editingDepartment &&
+                          editingDepartment.id === department.id ? (
+                            <div className="space-y-4">
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium">
+                                  Department Name
+                                </label>
+                                <Input
+                                  value={editingDepartment.name}
+                                  onChange={(e) =>
+                                    setEditingDepartment({
+                                      ...editingDepartment,
+                                      name: e.target.value,
+                                    })
+                                  }
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium">
+                                  Description
+                                </label>
+                                <Input
+                                  value={editingDepartment.description}
+                                  onChange={(e) =>
+                                    setEditingDepartment({
+                                      ...editingDepartment,
+                                      description: e.target.value,
+                                    })
+                                  }
+                                />
+                              </div>
+                              <div className="flex gap-2">
+                                <Button onClick={updateDepartment} size="sm">
+                                  Save Changes
+                                </Button>
+                                <Button
+                                  onClick={cancelEdit}
+                                  variant="outline"
+                                  size="sm"
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-start justify-between">
+                              <div className="space-y-3 flex-1">
+                                <div className="flex items-center gap-3">
+                                  <h3 className="text-xl font-semibold">
+                                    {department.name}
+                                  </h3>
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-xs"
+                                  >
+                                    {department.services?.length || 0} services
+                                  </Badge>
+                                </div>
+                                <p className="text-muted-foreground leading-relaxed">
+                                  {department.description}
+                                </p>
+                              </div>
+                              <div className="flex gap-2 ml-4">
+                                <Button
+                                  onClick={() => startEdit(department)}
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-2"
+                                >
+                                  <Edit3 className="w-4 h-4" />
+                                  Edit
+                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      className="gap-2"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                      Delete
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>
+                                        Delete Department
+                                      </AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Are you sure you want to delete "
+                                        {department.name}"? This action cannot
+                                        be undone and will also remove all
+                                        associated services.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>
+                                        Cancel
+                                      </AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() =>
+                                          deleteDepartment(department.id)
+                                        }
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      >
+                                        Delete Department
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </Layout>
   );

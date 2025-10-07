@@ -7,6 +7,37 @@ import {
   departmentsAPI,
   companyAPI,
 } from "../services/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Plus, Edit3, Trash2, Settings, List, AlertCircle } from "lucide-react";
 
 interface CommonIssue {
   id: number;
@@ -171,7 +202,9 @@ function Issues() {
   if (!user) {
     return (
       <Layout>
-        <div>Loading...</div>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-muted-foreground">Loading...</div>
+        </div>
       </Layout>
     );
   }
@@ -179,30 +212,52 @@ function Issues() {
   if (!company || services.length === 0) {
     return (
       <Layout>
-        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-          <h1
-            style={{
-              fontSize: "2rem",
-              fontWeight: "bold",
-              marginBottom: "2rem",
-            }}
-          >
-            Common Issues Management
-          </h1>
-          <div
-            style={{
-              padding: "2rem",
-              border: "2px dashed #ddd",
-              borderRadius: "8px",
-              textAlign: "center",
-              color: "#666",
-            }}
-          >
-            <p>
-              Please set up your company, departments, and services first before
-              managing common issues.
+        <div className="max-w-6xl mx-auto space-y-6">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight">Common Issues</h1>
+            <p className="text-muted-foreground">
+              Manage frequently encountered problems and their solutions
             </p>
           </div>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center py-16 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+                <div className="space-y-3">
+                  {!company ? (
+                    <>
+                      <h3 className="text-lg font-medium text-muted-foreground">
+                        No Company Profile Found
+                      </h3>
+                      <p className="text-sm text-muted-foreground/75 max-w-md mx-auto">
+                        Please set up your company information first.
+                      </p>
+                      <Button variant="outline" asChild className="mt-4">
+                        <a href="/WjN2Y1hMTk5saEFneUZZeWZScW1uUjVkRkJoU0E9PQ/general">
+                          Setup Company Profile
+                        </a>
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="text-lg font-medium text-muted-foreground">
+                        No Services Found
+                      </h3>
+                      <p className="text-sm text-muted-foreground/75 max-w-md mx-auto">
+                        Please set up your company, departments, and services
+                        first before managing common issues.
+                      </p>
+                      <Button variant="outline" asChild className="mt-4">
+                        <a href="/WjN2Y1hMTk5saEFneUZZeWZScW1uUjVkRkJoU0E9PQ/services">
+                          Setup Services
+                        </a>
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </Layout>
     );
@@ -210,338 +265,412 @@ function Issues() {
 
   return (
     <Layout>
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <h1
-          style={{ fontSize: "2rem", fontWeight: "bold", marginBottom: "2rem" }}
-        >
-          Common Issues Management - {company.name}
-        </h1>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">Common Issues</h1>
+          <p className="text-muted-foreground">
+            Manage {company.name}'s frequently encountered problems and their
+            solutions
+          </p>
+        </div>
 
-        {/* Create Issue Section */}
-        <div
-          style={{
-            marginBottom: "2rem",
-            padding: "1rem",
-            border: "1px solid #ddd",
-            borderRadius: "8px",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "1rem",
-            }}
-          >
-            <h2 style={{ fontSize: "1.5rem" }}>Common Issues</h2>
-            <button
-              onClick={() => setShowCreateForm(!showCreateForm)}
-              style={{
-                padding: "0.5rem 1rem",
-                backgroundColor: "#4CAF50",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
-            >
-              {showCreateForm ? "Cancel" : "Create Issue"}
-            </button>
-          </div>
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
+              <List className="w-4 h-4" />
+              Issue Overview
+            </TabsTrigger>
+            <TabsTrigger value="manage" className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Manage Issues
+            </TabsTrigger>
+          </TabsList>
 
-          {showCreateForm && (
-            <div
-              style={{
-                marginBottom: "1rem",
-                padding: "1rem",
-                backgroundColor: "#f9f9f9",
-                borderRadius: "4px",
-              }}
-            >
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "1rem",
-                  marginBottom: "1rem",
-                }}
-              >
-                <input
-                  type="text"
-                  placeholder="Issue Name"
-                  value={newIssue.name}
-                  onChange={(e) =>
-                    setNewIssue({ ...newIssue, name: e.target.value })
-                  }
-                  style={{
-                    padding: "0.5rem",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                  }}
-                />
-                <select
-                  value={newIssue.serviceId}
-                  onChange={(e) =>
-                    setNewIssue({ ...newIssue, serviceId: e.target.value })
-                  }
-                  style={{
-                    padding: "0.5rem",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                  }}
-                >
-                  <option value="">Select Service</option>
-                  {services.map((service: any) => (
-                    <option key={service.id} value={service.id}>
-                      {service.name} ({service.department?.name})
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <input
-                type="text"
-                placeholder="Description"
-                value={newIssue.description}
-                onChange={(e) =>
-                  setNewIssue({ ...newIssue, description: e.target.value })
-                }
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                  marginBottom: "1rem",
-                }}
-              />
-              <textarea
-                placeholder="Solutions (JSON format or plain text)"
-                value={newIssue.solutions}
-                onChange={(e) =>
-                  setNewIssue({ ...newIssue, solutions: e.target.value })
-                }
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                  marginBottom: "1rem",
-                  minHeight: "100px",
-                }}
-              />
-              <button
-                onClick={createIssue}
-                style={{
-                  padding: "0.5rem 1rem",
-                  backgroundColor: "#008CBA",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                Create
-              </button>
-            </div>
-          )}
-
-          {/* Issues List */}
-          <div style={{ display: "grid", gap: "1rem" }}>
-            {issues.map((issue: CommonIssue) => (
-              <div
-                key={issue.id}
-                style={{
-                  padding: "1rem",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                  backgroundColor: "white",
-                }}
-              >
-                {editingIssue && editingIssue.id === issue.id ? (
-                  <div>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: "1rem",
-                        marginBottom: "1rem",
-                      }}
-                    >
-                      <input
-                        type="text"
-                        value={editingIssue.name}
-                        onChange={(e) =>
-                          setEditingIssue({
-                            ...editingIssue,
-                            name: e.target.value,
-                          })
-                        }
-                        style={{
-                          padding: "0.5rem",
-                          border: "1px solid #ddd",
-                          borderRadius: "4px",
-                        }}
-                      />
-                      <select
-                        value={editingIssue.serviceId.toString()}
-                        onChange={(e) =>
-                          setEditingIssue({
-                            ...editingIssue,
-                            serviceId: parseInt(e.target.value),
-                          })
-                        }
-                        style={{
-                          padding: "0.5rem",
-                          border: "1px solid #ddd",
-                          borderRadius: "4px",
-                        }}
-                      >
-                        {services.map((service: any) => (
-                          <option key={service.id} value={service.id}>
-                            {service.name} ({service.department?.name})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <input
-                      type="text"
-                      value={editingIssue.description}
-                      onChange={(e) =>
-                        setEditingIssue({
-                          ...editingIssue,
-                          description: e.target.value,
-                        })
-                      }
-                      style={{
-                        width: "100%",
-                        padding: "0.5rem",
-                        border: "1px solid #ddd",
-                        borderRadius: "4px",
-                        marginBottom: "1rem",
-                      }}
-                    />
-                    <textarea
-                      value={editingIssue.solutions as string}
-                      onChange={(e) =>
-                        setEditingIssue({
-                          ...editingIssue,
-                          solutions: e.target.value,
-                        })
-                      }
-                      style={{
-                        width: "100%",
-                        padding: "0.5rem",
-                        border: "1px solid #ddd",
-                        borderRadius: "4px",
-                        marginBottom: "1rem",
-                        minHeight: "100px",
-                      }}
-                    />
-                    <div style={{ display: "flex", gap: "1rem" }}>
-                      <button
-                        onClick={updateIssue}
-                        style={{
-                          padding: "0.5rem 1rem",
-                          backgroundColor: "#008CBA",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={cancelEdit}
-                        style={{
-                          padding: "0.5rem 1rem",
-                          backgroundColor: "#666",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Cancel
-                      </button>
+          <TabsContent value="overview" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Issue Overview</CardTitle>
+                <CardDescription>
+                  View all common issues and their solutions across your
+                  services
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {issues.length === 0 ? (
+                  <div className="text-center py-12 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-medium text-muted-foreground">
+                        No Common Issues Found
+                      </h3>
+                      <p className="text-sm text-muted-foreground/75">
+                        Create your first common issue to help streamline
+                        customer support.
+                      </p>
                     </div>
                   </div>
                 ) : (
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
-                    }}
-                  >
-                    <div style={{ flex: 1 }}>
-                      <h3 style={{ margin: "0 0 0.5rem 0" }}>{issue.name}</h3>
-                      <p style={{ margin: "0", color: "#666" }}>
-                        Service: {issue.service?.name} (
-                        {issue.service?.department?.name})
-                      </p>
-                      <p style={{ margin: "0.5rem 0 0 0", color: "#888" }}>
-                        {issue.description}
-                      </p>
-                      <div style={{ margin: "0.5rem 0 0 0", color: "#888" }}>
-                        <strong>Solutions:</strong>
-                        <pre
-                          style={{
-                            backgroundColor: "#f5f5f5",
-                            padding: "0.5rem",
-                            borderRadius: "4px",
-                            fontSize: "0.9rem",
-                            maxHeight: "150px",
-                            overflow: "auto",
-                            marginTop: "0.5rem",
-                          }}
-                        >
-                          {typeof issue.solutions === "object"
-                            ? JSON.stringify(issue.solutions, null, 2)
-                            : issue.solutions}
-                        </pre>
-                      </div>
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "0.5rem",
-                        marginLeft: "1rem",
-                      }}
-                    >
-                      <button
-                        onClick={() => startEdit(issue)}
-                        style={{
-                          padding: "0.5rem 1rem",
-                          backgroundColor: "#FF9800",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                        }}
+                  <div className="grid gap-4">
+                    {issues.map((issue: CommonIssue) => (
+                      <Card
+                        key={issue.id}
+                        className="shadow-sm hover:shadow-md transition-shadow"
                       >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => deleteIssue(issue.id)}
-                        style={{
-                          padding: "0.5rem 1rem",
-                          backgroundColor: "#f44336",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Delete
-                      </button>
-                    </div>
+                        <CardContent className="pt-6">
+                          <div className="space-y-4">
+                            <div className="flex items-start justify-between">
+                              <div className="space-y-2 flex-1">
+                                <div className="flex items-center gap-3">
+                                  <AlertCircle className="w-5 h-5 text-orange-500" />
+                                  <h3 className="text-xl font-semibold">
+                                    {issue.name}
+                                  </h3>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-xs"
+                                  >
+                                    {issue.service?.name}
+                                  </Badge>
+                                  <Badge variant="outline" className="text-xs">
+                                    {issue.service?.department?.name}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </div>
+                            <p className="text-muted-foreground leading-relaxed">
+                              {issue.description}
+                            </p>
+                            <div className="space-y-2">
+                              <h4 className="text-sm font-medium text-muted-foreground">
+                                Solutions:
+                              </h4>
+                              <div className="bg-muted/50 p-4 rounded-lg">
+                                <pre className="text-sm whitespace-pre-wrap text-foreground">
+                                  {typeof issue.solutions === "object"
+                                    ? JSON.stringify(issue.solutions, null, 2)
+                                    : issue.solutions}
+                                </pre>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
                 )}
-              </div>
-            ))}
-          </div>
-        </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="manage" className="space-y-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                <div>
+                  <CardTitle>Manage Common Issues</CardTitle>
+                  <CardDescription>
+                    Create, edit, and delete common issues and their solutions
+                  </CardDescription>
+                </div>
+                <Button
+                  onClick={() => setShowCreateForm(!showCreateForm)}
+                  variant={showCreateForm ? "outline" : "default"}
+                  size="sm"
+                  className="gap-2"
+                >
+                  {showCreateForm ? (
+                    "Cancel"
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4" />
+                      New Issue
+                    </>
+                  )}
+                </Button>
+              </CardHeader>
+
+              <CardContent className="space-y-6">
+                {showCreateForm && (
+                  <div className="space-y-6 p-6 bg-muted/30 rounded-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">
+                          Issue Name
+                        </label>
+                        <Input
+                          placeholder="e.g. Login Problems, Payment Failed"
+                          value={newIssue.name}
+                          onChange={(e) =>
+                            setNewIssue({ ...newIssue, name: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Service</label>
+                        <Select
+                          value={newIssue.serviceId}
+                          onValueChange={(value) =>
+                            setNewIssue({ ...newIssue, serviceId: value })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select service" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {services.map((service: any) => (
+                              <SelectItem
+                                key={service.id}
+                                value={service.id.toString()}
+                              >
+                                {service.name} ({service.department?.name})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Description</label>
+                      <Input
+                        placeholder="Describe the common issue"
+                        value={newIssue.description}
+                        onChange={(e) =>
+                          setNewIssue({
+                            ...newIssue,
+                            description: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Solutions</label>
+                      <Textarea
+                        placeholder="Provide solutions (JSON format or plain text)"
+                        value={newIssue.solutions}
+                        onChange={(e) =>
+                          setNewIssue({
+                            ...newIssue,
+                            solutions: e.target.value,
+                          })
+                        }
+                        className="min-h-[100px]"
+                      />
+                    </div>
+                    <Button onClick={createIssue} className="gap-2">
+                      <Plus className="w-4 h-4" />
+                      Create Issue
+                    </Button>
+                  </div>
+                )}
+
+                {issues.length === 0 ? (
+                  <div className="text-center py-12 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-medium text-muted-foreground">
+                        No Common Issues Found
+                      </h3>
+                      <p className="text-sm text-muted-foreground/75">
+                        Create your first common issue to get started.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid gap-4">
+                    {issues.map((issue: CommonIssue) => (
+                      <Card key={issue.id} className="shadow-sm">
+                        <CardContent className="pt-6">
+                          {editingIssue && editingIssue.id === issue.id ? (
+                            <div className="space-y-4">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                  <label className="text-sm font-medium">
+                                    Issue Name
+                                  </label>
+                                  <Input
+                                    value={editingIssue.name}
+                                    onChange={(e) =>
+                                      setEditingIssue({
+                                        ...editingIssue,
+                                        name: e.target.value,
+                                      })
+                                    }
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="text-sm font-medium">
+                                    Service
+                                  </label>
+                                  <Select
+                                    value={editingIssue.serviceId.toString()}
+                                    onValueChange={(value) =>
+                                      setEditingIssue({
+                                        ...editingIssue,
+                                        serviceId: parseInt(value),
+                                      })
+                                    }
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {services.map((service: any) => (
+                                        <SelectItem
+                                          key={service.id}
+                                          value={service.id.toString()}
+                                        >
+                                          {service.name} (
+                                          {service.department?.name})
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium">
+                                  Description
+                                </label>
+                                <Input
+                                  value={editingIssue.description}
+                                  onChange={(e) =>
+                                    setEditingIssue({
+                                      ...editingIssue,
+                                      description: e.target.value,
+                                    })
+                                  }
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium">
+                                  Solutions
+                                </label>
+                                <Textarea
+                                  value={editingIssue.solutions as string}
+                                  onChange={(e) =>
+                                    setEditingIssue({
+                                      ...editingIssue,
+                                      solutions: e.target.value,
+                                    })
+                                  }
+                                  className="min-h-[100px]"
+                                />
+                              </div>
+                              <div className="flex gap-2">
+                                <Button onClick={updateIssue} size="sm">
+                                  Save Changes
+                                </Button>
+                                <Button
+                                  onClick={cancelEdit}
+                                  variant="outline"
+                                  size="sm"
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-start justify-between">
+                              <div className="space-y-4 flex-1">
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-3">
+                                    <AlertCircle className="w-5 h-5 text-orange-500" />
+                                    <h3 className="text-xl font-semibold">
+                                      {issue.name}
+                                    </h3>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Badge
+                                      variant="secondary"
+                                      className="text-xs"
+                                    >
+                                      {issue.service?.name}
+                                    </Badge>
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
+                                      {issue.service?.department?.name}
+                                    </Badge>
+                                  </div>
+                                </div>
+                                <p className="text-muted-foreground leading-relaxed">
+                                  {issue.description}
+                                </p>
+                                <div className="space-y-2">
+                                  <h4 className="text-sm font-medium text-muted-foreground">
+                                    Solutions:
+                                  </h4>
+                                  <div className="bg-muted/50 p-4 rounded-lg max-h-[150px] overflow-auto">
+                                    <pre className="text-sm whitespace-pre-wrap text-foreground">
+                                      {typeof issue.solutions === "object"
+                                        ? JSON.stringify(
+                                            issue.solutions,
+                                            null,
+                                            2
+                                          )
+                                        : issue.solutions}
+                                    </pre>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex gap-2 ml-4">
+                                <Button
+                                  onClick={() => startEdit(issue)}
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-2"
+                                >
+                                  <Edit3 className="w-4 h-4" />
+                                  Edit
+                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      className="gap-2"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                      Delete
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>
+                                        Delete Common Issue
+                                      </AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Are you sure you want to delete "
+                                        {issue.name}"? This action cannot be
+                                        undone and will remove the issue and all
+                                        its solutions.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>
+                                        Cancel
+                                      </AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => deleteIssue(issue.id)}
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      >
+                                        Delete Issue
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </Layout>
   );

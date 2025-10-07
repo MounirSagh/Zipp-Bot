@@ -2,6 +2,19 @@ import { Layout } from "@/components/Layout";
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { companyAPI, searchAPI, departmentsAPI } from "../services/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Search, Plus, Edit3, Users, User } from "lucide-react";
 
 function General() {
   const { user } = useUser();
@@ -92,267 +105,247 @@ function General() {
   if (!user) {
     return (
       <Layout>
-        <div>Loading...</div>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-muted-foreground">Loading...</div>
+        </div>
       </Layout>
     );
   }
 
   return (
     <Layout>
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <h1
-          style={{ fontSize: "2rem", fontWeight: "bold", marginBottom: "2rem" }}
-        >
-          Company Dashboard
-        </h1>
-
-        {/* Company Info Section */}
-        <div
-          style={{
-            marginBottom: "2rem",
-            padding: "1rem",
-            border: "1px solid #ddd",
-            borderRadius: "8px",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "1rem",
-            }}
-          >
-            <h2 style={{ fontSize: "1.5rem" }}>Company Information</h2>
-            <button
-              onClick={() => setShowEditForm(!showEditForm)}
-              style={{
-                padding: "0.5rem 1rem",
-                backgroundColor: "#4CAF50",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
-            >
-              {showEditForm
-                ? "Cancel"
-                : company
-                ? "Edit Info"
-                : "Setup Company"}
-            </button>
-          </div>
-
-          {showEditForm ? (
-            <div
-              style={{
-                marginBottom: "1rem",
-                padding: "1rem",
-                backgroundColor: "#f9f9f9",
-                borderRadius: "4px",
-              }}
-            >
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "1rem",
-                  marginBottom: "1rem",
-                }}
-              >
-                <input
-                  type="text"
-                  placeholder="Company Name"
-                  value={companyForm.name}
-                  onChange={(e) =>
-                    setCompanyForm({ ...companyForm, name: e.target.value })
-                  }
-                  style={{
-                    padding: "0.5rem",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                  }}
-                />
-                <input
-                  type="text"
-                  placeholder="Business Field"
-                  value={companyForm.field}
-                  onChange={(e) =>
-                    setCompanyForm({ ...companyForm, field: e.target.value })
-                  }
-                  style={{
-                    padding: "0.5rem",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                  }}
-                />
-              </div>
-              <input
-                type="text"
-                placeholder="Company Description"
-                value={companyForm.description}
-                onChange={(e) =>
-                  setCompanyForm({
-                    ...companyForm,
-                    description: e.target.value,
-                  })
-                }
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                  marginBottom: "1rem",
-                }}
-              />
-              <button
-                onClick={createOrUpdateCompany}
-                style={{
-                  padding: "0.5rem 1rem",
-                  backgroundColor: "#008CBA",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                {company ? "Update" : "Create"}
-              </button>
-            </div>
-          ) : company ? (
-            <div
-              style={{
-                padding: "1rem",
-                border: "1px solid #ddd",
-                borderRadius: "4px",
-                backgroundColor: "white",
-              }}
-            >
-              <h3 style={{ margin: "0 0 0.5rem 0" }}>{company.name}</h3>
-              <p style={{ margin: "0", color: "#666" }}>
-                Field: {company.field}
-              </p>
-              <p style={{ margin: "0.5rem 0 0 0", color: "#888" }}>
-                {company.description}
-              </p>
-              <p
-                style={{
-                  margin: "0.5rem 0 0 0",
-                  color: "#888",
-                  fontSize: "0.9rem",
-                }}
-              >
-                Departments: {departments.length}
-              </p>
-            </div>
-          ) : (
-            <div
-              style={{
-                padding: "1rem",
-                border: "2px dashed #ddd",
-                borderRadius: "4px",
-                textAlign: "center",
-                color: "#666",
-              }}
-            >
-              <p>
-                No company information found. Click "Setup Company" to get
-                started.
-              </p>
-            </div>
-          )}
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">General</h1>
+          <p className="text-muted-foreground">
+            Manage your company profile and search through your knowledge base
+          </p>
         </div>
 
-        {/* Search Section */}
-        {company && (
-          <div
-            style={{
-              padding: "1rem",
-              border: "1px solid #ddd",
-              borderRadius: "8px",
-            }}
-          >
-            <h2 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>
-              Search Knowledge Base
-            </h2>
+        <Tabs defaultValue="profile" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="profile" className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              Company Profile
+            </TabsTrigger>
+            <TabsTrigger value="search" className="flex items-center gap-2">
+              <Search className="w-4 h-4" />
+              Knowledge Search
+            </TabsTrigger>
+          </TabsList>
 
-            <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
-              <input
-                type="text"
-                placeholder="Enter search query..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  padding: "0.5rem",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                  flex: "1",
-                }}
-              />
-              <button
-                onClick={handleSearch}
-                disabled={loading || !searchQuery}
-                style={{
-                  padding: "0.5rem 1rem",
-                  backgroundColor: loading ? "#ccc" : "#FF9800",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: loading ? "not-allowed" : "pointer",
-                }}
-              >
-                {loading ? "Searching..." : "Search"}
-              </button>
-            </div>
-
-            {/* Search Results */}
-            {searchResults.length > 0 && (
-              <div>
-                <h3 style={{ marginBottom: "1rem" }}>
-                  Search Results ({searchResults.length})
-                </h3>
-                <div style={{ display: "grid", gap: "1rem" }}>
-                  {searchResults.map((result: any, index: number) => (
-                    <div
-                      key={index}
-                      style={{
-                        padding: "1rem",
-                        border: "1px solid #ddd",
-                        borderRadius: "4px",
-                        backgroundColor: "#f9f9f9",
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          marginBottom: "0.5rem",
-                        }}
-                      >
-                        <span style={{ fontWeight: "bold", color: "#666" }}>
-                          {result.metadata?.type?.toUpperCase()} - Score:{" "}
-                          {(result.score * 100).toFixed(1)}%
-                        </span>
-                      </div>
-                      <h4 style={{ margin: "0 0 0.5rem 0" }}>
-                        {result.metadata?.name}
-                      </h4>
-                      <p style={{ margin: "0", color: "#666" }}>
-                        {result.metadata?.description}
-                      </p>
-                      {result.metadata?.solutions && (
-                        <p style={{ margin: "0.5rem 0 0 0", color: "#888" }}>
-                          Solutions: {result.metadata.solutions}
-                        </p>
-                      )}
-                    </div>
-                  ))}
+          <TabsContent value="profile" className="space-y-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                <div>
+                  <CardTitle className="text-xl">Company Information</CardTitle>
+                  <CardDescription>
+                    Manage your company details and business information
+                  </CardDescription>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
+                <Button
+                  onClick={() => setShowEditForm(!showEditForm)}
+                  variant={showEditForm ? "outline" : "default"}
+                  size="sm"
+                  className="gap-2"
+                >
+                  {showEditForm ? (
+                    "Cancel"
+                  ) : (
+                    <>
+                      {company ? (
+                        <Edit3 className="w-4 h-4" />
+                      ) : (
+                        <Plus className="w-4 h-4" />
+                      )}
+                      {company ? "Edit Profile" : "Create Profile"}
+                    </>
+                  )}
+                </Button>
+              </CardHeader>
+
+              <CardContent>
+                {showEditForm ? (
+                  <div className="space-y-6 p-6 bg-muted/30 rounded-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">
+                          Company Name
+                        </label>
+                        <Input
+                          placeholder="Enter company name"
+                          value={companyForm.name}
+                          onChange={(e) =>
+                            setCompanyForm({
+                              ...companyForm,
+                              name: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">
+                          Business Field
+                        </label>
+                        <Input
+                          placeholder="e.g. Technology, Healthcare, Finance"
+                          value={companyForm.field}
+                          onChange={(e) =>
+                            setCompanyForm({
+                              ...companyForm,
+                              field: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        Company Description
+                      </label>
+                      <Input
+                        placeholder="Describe your company's mission and services"
+                        value={companyForm.description}
+                        onChange={(e) =>
+                          setCompanyForm({
+                            ...companyForm,
+                            description: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <Button onClick={createOrUpdateCompany} className="gap-2">
+                      {company ? "Update Profile" : "Create Profile"}
+                    </Button>
+                  </div>
+                ) : company ? (
+                  <div className="space-y-6">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-3">
+                        <h3 className="text-2xl font-semibold">
+                          {company.name}
+                        </h3>
+                        <Badge variant="secondary" className="w-fit">
+                          {company.field}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-2 rounded-md">
+                        <Users className="w-4 h-4" />
+                        {departments.length} departments
+                      </div>
+                    </div>
+                    <Separator />
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-muted-foreground">
+                        Description
+                      </h4>
+                      <p className="text-foreground leading-relaxed">
+                        {company.description}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-16 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-medium text-muted-foreground">
+                        No Company Profile
+                      </h3>
+                      <p className="text-sm text-muted-foreground/75 max-w-md mx-auto">
+                        Create your company profile to get started with managing
+                        your business information and departments.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="search" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Knowledge Base Search</CardTitle>
+                <CardDescription>
+                  Search through your company's departments, services, and
+                  information
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex gap-3">
+                  <Input
+                    placeholder="Enter search query..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="flex-1"
+                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  />
+                  <Button
+                    onClick={handleSearch}
+                    disabled={loading || !searchQuery || !company}
+                    className="gap-2"
+                  >
+                    <Search className="w-4 h-4" />
+                    {loading ? "Searching..." : "Search"}
+                  </Button>
+                </div>
+
+                {!company && (
+                  <div className="text-center py-8 border border-dashed border-muted-foreground/25 rounded-lg bg-muted/20">
+                    <p className="text-muted-foreground">
+                      Please create a company profile first to enable knowledge
+                      base search.
+                    </p>
+                  </div>
+                )}
+
+                {/* Search Results */}
+                {searchResults.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-medium">Search Results</h3>
+                      <Badge variant="outline">
+                        {searchResults.length} found
+                      </Badge>
+                    </div>
+                    <div className="grid gap-4">
+                      {searchResults.map((result: any, index: number) => (
+                        <Card
+                          key={index}
+                          className="shadow-sm hover:shadow-md transition-shadow"
+                        >
+                          <CardContent className="pt-6">
+                            <div className="flex items-center justify-between mb-3">
+                              <Badge variant="secondary" className="text-xs">
+                                {result.metadata?.type?.toUpperCase() ||
+                                  "UNKNOWN"}
+                              </Badge>
+                              <Badge variant="outline" className="text-xs">
+                                {(result.score * 100).toFixed(1)}% match
+                              </Badge>
+                            </div>
+                            <h4 className="font-semibold mb-2">
+                              {result.metadata?.name || "Untitled"}
+                            </h4>
+                            <p className="text-muted-foreground text-sm mb-2">
+                              {result.metadata?.description ||
+                                "No description available"}
+                            </p>
+                            {result.metadata?.solutions && (
+                              <p className="text-sm text-muted-foreground/75">
+                                <span className="font-medium">Solutions:</span>{" "}
+                                {result.metadata.solutions}
+                              </p>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </Layout>
   );

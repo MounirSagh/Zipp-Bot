@@ -18,7 +18,13 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
-import { Building, ClipboardList, HandHelping, Home, LayoutDashboard } from "lucide-react";
+import {
+  Building,
+  ClipboardList,
+  HandHelping,
+  Home,
+  LayoutDashboard,
+} from "lucide-react";
 import { useClerk } from "@clerk/clerk-react";
 
 const mainNavItems = [
@@ -80,22 +86,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="border-b border-sidebar-border bg-white">
-        <div className="flex items-center justify-center gap-2 py-2">
+        <div className="flex items-center justify-center gap-2 py-3">
           <div
             className={cn(
               "transition-opacity duration-200",
               state === "collapsed" && "opacity-0"
             )}
           >
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1">
-                <h1 className="text-3xl font-bold text-black font-qwigley">
-                  ZIPP
-                </h1>
-                <h1 className="text-2xl font-bold text-yellow-500 font-qwigley mt-4">
-                  Bot
-                </h1>
-              </div>
+            <div className="flex items-center gap-1">
+              <h1 className="text-2xl font-bold text-foreground font-merriweather">
+                ZIPP
+              </h1>
+              <h1 className="text-xl font-bold text-purple-800 mt-2 font-merriweather">
+                Bot
+              </h1>
             </div>
           </div>
         </div>
@@ -114,7 +118,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="bg-white">
-        <Button onClick={() => signOut()}>Logout</Button>
+        <Button onClick={() => signOut()} variant="outline" className="w-full">
+          Logout
+        </Button>
       </SidebarFooter>
 
       <SidebarRail />
