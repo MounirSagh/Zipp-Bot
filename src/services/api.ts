@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://aivo-backend.vercel.app/api";
+const API_BASE_URL = "https://aivo-backend.vercel.app/api";
 
 // Company API calls
 export const companyAPI = {
