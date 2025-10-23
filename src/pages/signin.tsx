@@ -25,9 +25,6 @@ export default function Home() {
             <h1 className="text-2xl font-bold text-white font-merriweather">
               ZIPP
             </h1>
-            <h1 className="text-xl font-bold text-purple-300 font-merriweather">
-              Bot
-            </h1>
           </div>
         </motion.div>
 
