@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Play } from "lucide-react";
-import bgVideo from "../../assets/bg-zipp.mp4";
+// import bgVideo from "../../assets/bg-zipp.mp4";
+const bgVideo = "/videos/bg-zipp.mp4";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { SignIn } from "@clerk/clerk-react";

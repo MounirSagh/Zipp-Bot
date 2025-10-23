@@ -1,6 +1,7 @@
 import { Calendar, UserPlus } from "lucide-react";
 import { motion } from "framer-motion";
-import bgVideo from "../../assets/bg4-zip.mp4";
+// import bgVideo from "../../assets/bg4-zip.mp4";
+const bgVideo = "/videos/bg4-zip.mp4";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { SignIn } from "@clerk/clerk-react";
 import { useState } from "react";

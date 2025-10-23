@@ -1,6 +1,7 @@
 import { Users, Zap, Shield } from "lucide-react";
 import { motion } from "framer-motion";
-import bgvideo from "../../assets/bg2-zip.mp4";
+// import bgvideo from "../../assets/bg2-zip.mp4";
+const bgvideo = "/videos/bg2-zip.mp4";
 import DottedGlowBackground from "../ui/dotted-glow-background";
 
 function ScaleSection() {

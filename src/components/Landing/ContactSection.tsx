@@ -10,7 +10,8 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 // import { useState } from "react";
-import bgVideo from "../../assets/bg-zipp.mp4";
+// import bgVideo from "../../assets/bg-zipp.mp4";
+const bgVideo = "/videos/bg-zipp.mp4";
 import DottedGlowBackground from "../ui/dotted-glow-background";
 
 function ContactSection() {

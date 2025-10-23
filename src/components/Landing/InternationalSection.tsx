@@ -1,6 +1,6 @@
-
 import { motion } from "framer-motion";
-import bgGif from "../../assets/mockup-unscreen.gif";
+// import bgGif from "../../assets/mockup-unscreen.gif";
+const bgGif = "/videos/mockup-unscreen.gif";
 
 function InternationalSection() {
   return (

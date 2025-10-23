@@ -1,6 +1,7 @@
 import { Clock, TrendingUp, UserCheck } from "lucide-react";
 import { motion } from "framer-motion";
-import bgVideo from "../../assets/bg1-zip.mp4";
+// import bgVideo from "../../assets/bg1-zip.mp4";
+const bgVideo = "/videos/bg1-zip.mp4";
 import DottedGlowBackground from "../ui/dotted-glow-background";
 
 function IntelligentSection() {
