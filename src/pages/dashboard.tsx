@@ -79,8 +79,10 @@ function Dashboard() {
         {/* Header */}
         <div className="flex items-center gap-3">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-3xl font-bold tracking-tight text-white">
+              Dashboard
+            </h1>
+            <p className="text-gray-400">
               Overview of your company's AI knowledge base
             </p>
           </div>
@@ -89,17 +91,20 @@ function Dashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat, index) => (
-            <Card key={index} className="hover:shadow-md transition-shadow">
+            <Card
+              key={index}
+              className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/10 transition-all duration-300"
+            >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-muted-foreground">
+                    <p className="text-sm font-medium text-gray-400">
                       {stat.title}
                     </p>
-                    <p className="text-3xl font-bold">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {stat.change}
+                    <p className="text-3xl font-bold text-white">
+                      {stat.value}
                     </p>
+                    <p className="text-xs text-gray-500">{stat.change}</p>
                   </div>
                 </div>
               </CardContent>
@@ -108,13 +113,13 @@ function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <Card>
+        <Card className="bg-white/5 backdrop-blur-xl border-white/10">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <Plus className="w-5 h-5" />
               Quick Actions
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-gray-400">
               Common tasks to manage your knowledge base
             </CardDescription>
           </CardHeader>
@@ -124,7 +129,7 @@ function Dashboard() {
                 <Button
                   key={index}
                   variant="ghost"
-                  className={`h-auto p-4 flex flex-col items-start gap-3 text-left ${action.color}`}
+                  className="h-auto p-4 flex flex-col items-start gap-3 text-left bg-white/5 hover:bg-white/10 border border-white/10 text-white"
                   asChild
                 >
                   <a href={action.href}>
@@ -133,7 +138,9 @@ function Dashboard() {
                       <span className="font-medium">{action.title}</span>
                       <ArrowRight className="w-4 h-4 ml-auto" />
                     </div>
-                    <p className="text-sm opacity-75">{action.description}</p>
+                    <p className="text-sm text-gray-400">
+                      {action.description}
+                    </p>
                   </a>
                 </Button>
               ))}
@@ -142,49 +149,70 @@ function Dashboard() {
         </Card>
 
         {/* Recent Activity */}
-        <Card>
+        <Card className="bg-white/5 backdrop-blur-xl border-white/10">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <Activity className="w-5 h-5" />
               Recent Activity
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-gray-400">
               Latest updates to your knowledge base
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
+              <div className="flex items-center gap-4 p-3 rounded-lg bg-white/5 backdrop-blur-sm border border-white/10">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium">New department added</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm font-medium text-white">
+                    New department added
+                  </p>
+                  <p className="text-xs text-gray-400">
                     Customer Support - 2 hours ago
                   </p>
                 </div>
-                <Badge variant="secondary">Department</Badge>
+                <Badge
+                  variant="secondary"
+                  className="bg-white/10 text-white border-white/20"
+                >
+                  Department
+                </Badge>
               </div>
 
-              <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
+              <div className="flex items-center gap-4 p-3 rounded-lg bg-white/5 backdrop-blur-sm border border-white/10">
                 <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium">Service updated</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm font-medium text-white">
+                    Service updated
+                  </p>
+                  <p className="text-xs text-gray-400">
                     Technical Support - 4 hours ago
                   </p>
                 </div>
-                <Badge variant="secondary">Service</Badge>
+                <Badge
+                  variant="secondary"
+                  className="bg-white/10 text-white border-white/20"
+                >
+                  Service
+                </Badge>
               </div>
 
-              <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
+              <div className="flex items-center gap-4 p-3 rounded-lg bg-white/5 backdrop-blur-sm border border-white/10">
                 <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium">Common issue resolved</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm font-medium text-white">
+                    Common issue resolved
+                  </p>
+                  <p className="text-xs text-gray-400">
                     Login Problems - 6 hours ago
                   </p>
                 </div>
-                <Badge variant="secondary">Issue</Badge>
+                <Badge
+                  variant="secondary"
+                  className="bg-white/10 text-white border-white/20"
+                >
+                  Issue
+                </Badge>
               </div>
             </div>
           </CardContent>

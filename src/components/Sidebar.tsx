@@ -85,7 +85,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { signOut } = useClerk();
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="border-b border-sidebar-border bg-white">
+      <SidebarHeader className="border-b border-sidebar-border bg-black text-white">
         <div className="flex items-center justify-center gap-2 py-3">
           <div
             className={cn(
@@ -94,22 +94,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             )}
           >
             <div className="flex items-center gap-1">
-              <h1 className="text-2xl font-bold text-foreground font-merriweather">
+              <h1 className="text-2xl font-bold text-white"  style={{ fontFamily: "'Major Mono Display', monospace" }}>
                 ZIPP
-              </h1>
-              <h1 className="text-xl font-bold text-purple-800 mt-2 font-merriweather">
-                Bot
               </h1>
             </div>
           </div>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="bg-white">
+      <SidebarContent className="bg-black">
         <SidebarGroup>
           <SidebarGroupLabel>Main Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
+            <SidebarMenu className="space-y-1 text-white">
               {mainNavItems.map((item) => (
                 <SidebarNavItem key={item.path} {...item} />
               ))}
@@ -117,8 +114,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="bg-white">
-        <Button onClick={() => signOut()} variant="outline" className="w-full">
+      <SidebarFooter className="bg-black">
+        <Button onClick={() => signOut()} variant="outline" className="w-full text-black bg-white">
           Logout
         </Button>
       </SidebarFooter>

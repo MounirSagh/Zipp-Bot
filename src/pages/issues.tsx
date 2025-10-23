@@ -1,4 +1,5 @@
 import { Layout } from "@/components/Layout";
+import Loading from "@/components/Loading";
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import {
@@ -53,6 +54,7 @@ function Issues() {
   const [issues, setIssues] = useState<CommonIssue[]>([]);
   const [services, setServices] = useState<any[]>([]);
   const [company, setCompany] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingIssue, setEditingIssue] = useState<CommonIssue | null>(null);
   const [newIssue, setNewIssue] = useState({
@@ -64,63 +66,55 @@ function Issues() {
 
   useEffect(() => {
     if (user?.id) {
-      loadCompany();
-      loadServices();
-      loadIssues();
+      loadAllData();
     }
   }, [user]);
 
-  const loadCompany = async () => {
+  const loadAllData = async () => {
     if (!user?.id) return;
 
     try {
-      const data = await companyAPI.getByCompanyId(user.id);
-      if (data && data.length > 0) {
-        setCompany(data[0]);
-      }
-    } catch (error) {
-      console.error("Error loading company:", error);
-    }
-  };
+      setLoading(true);
 
-  const loadIssues = async () => {
-    if (!user?.id) return;
-
-    try {
+      // Step 1: Get company (single call)
       const companies = await companyAPI.getByCompanyId(user.id);
-      if (companies && companies.length > 0) {
-        const depts = await departmentsAPI.getByCompany(companies[0].id);
-        const allIssues = [];
-        for (const dept of depts) {
-          const services = await servicesAPI.getByDepartment(dept.id);
-          for (const service of services) {
-            const issues = await commonIssuesAPI.getByService(service.id);
-            allIssues.push(...issues);
-          }
-        }
+      if (!companies || companies.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      const companyData = companies[0];
+      setCompany(companyData);
+
+      // Step 2: Get departments
+      const depts = await departmentsAPI.getByCompany(companyData.id);
+
+      if (depts.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      // Step 3: Get all services in parallel
+      const servicePromises = depts.map((dept: any) =>
+        servicesAPI.getByDepartment(dept.id)
+      );
+      const servicesArrays = await Promise.all(servicePromises);
+      const allServices = servicesArrays.flat();
+      setServices(allServices);
+
+      // Step 4: Get all issues in parallel
+      if (allServices.length > 0) {
+        const issuePromises = allServices.map((service: any) =>
+          commonIssuesAPI.getByService(service.id)
+        );
+        const issuesArrays = await Promise.all(issuePromises);
+        const allIssues = issuesArrays.flat();
         setIssues(allIssues);
       }
     } catch (error) {
-      console.error("Error loading issues:", error);
-    }
-  };
-
-  const loadServices = async () => {
-    if (!user?.id) return;
-
-    try {
-      const companies = await companyAPI.getByCompanyId(user.id);
-      if (companies && companies.length > 0) {
-        const depts = await departmentsAPI.getByCompany(companies[0].id);
-        const allServices = [];
-        for (const dept of depts) {
-          const deptServices = await servicesAPI.getByDepartment(dept.id);
-          allServices.push(...deptServices);
-        }
-        setServices(allServices);
-      }
-    } catch (error) {
-      console.error("Error loading services:", error);
+      console.error("Error loading data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -141,7 +135,7 @@ function Issues() {
       });
       setNewIssue({ name: "", description: "", solutions: "", serviceId: "" });
       setShowCreateForm(false);
-      loadIssues();
+      loadAllData();
     } catch (error) {
       console.error("Error creating issue:", error);
     }
@@ -168,7 +162,7 @@ function Issues() {
         serviceId: editingIssue.serviceId,
       });
       setEditingIssue(null);
-      loadIssues();
+      loadAllData();
     } catch (error) {
       console.error("Error updating issue:", error);
     }
@@ -178,7 +172,7 @@ function Issues() {
     if (confirm("Are you sure you want to delete this issue?")) {
       try {
         await commonIssuesAPI.delete(id);
-        loadIssues();
+        loadAllData();
       } catch (error) {
         console.error("Error deleting issue:", error);
       }
@@ -199,12 +193,10 @@ function Issues() {
     setEditingIssue(null);
   };
 
-  if (!user) {
+  if (!user || loading) {
     return (
       <Layout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-muted-foreground">Loading...</div>
-        </div>
+        <Loading />
       </Layout>
     );
   }
@@ -214,25 +206,31 @@ function Issues() {
       <Layout>
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">Common Issues</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-3xl font-bold tracking-tight text-white">
+              Common Issues
+            </h1>
+            <p className="text-gray-400">
               Manage frequently encountered problems and their solutions
             </p>
           </div>
 
-          <Card>
+          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
             <CardContent className="pt-6">
-              <div className="text-center py-16 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+              <div className="text-center py-16 border-2 border-dashed border-white/10 rounded-lg">
                 <div className="space-y-3">
                   {!company ? (
                     <>
-                      <h3 className="text-lg font-medium text-muted-foreground">
+                      <h3 className="text-lg font-medium text-gray-400">
                         No Company Profile Found
                       </h3>
-                      <p className="text-sm text-muted-foreground/75 max-w-md mx-auto">
+                      <p className="text-sm text-gray-500 max-w-md mx-auto">
                         Please set up your company information first.
                       </p>
-                      <Button variant="outline" asChild className="mt-4">
+                      <Button
+                        variant="outline"
+                        asChild
+                        className="mt-4 bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                      >
                         <a href="/WjN2Y1hMTk5saEFneUZZeWZScW1uUjVkRkJoU0E9PQ/general">
                           Setup Company Profile
                         </a>
@@ -240,14 +238,18 @@ function Issues() {
                     </>
                   ) : (
                     <>
-                      <h3 className="text-lg font-medium text-muted-foreground">
+                      <h3 className="text-lg font-medium text-gray-400">
                         No Services Found
                       </h3>
-                      <p className="text-sm text-muted-foreground/75 max-w-md mx-auto">
+                      <p className="text-sm text-gray-500 max-w-md mx-auto">
                         Please set up your company, departments, and services
                         first before managing common issues.
                       </p>
-                      <Button variant="outline" asChild className="mt-4">
+                      <Button
+                        variant="outline"
+                        asChild
+                        className="mt-4 bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                      >
                         <a href="/WjN2Y1hMTk5saEFneUZZeWZScW1uUjVkRkJoU0E9PQ/services">
                           Setup Services
                         </a>
@@ -267,42 +269,50 @@ function Issues() {
     <Layout>
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Common Issues</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold tracking-tight text-white">
+            Common Issues
+          </h1>
+          <p className="text-gray-400">
             Manage {company.name}'s frequently encountered problems and their
             solutions
           </p>
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-2 bg-white/5 backdrop-blur-xl border border-white/10">
+            <TabsTrigger
+              value="overview"
+              className="flex items-center gap-2 data-[state=active]:bg-white/10 text-gray-400 data-[state=active]:text-white"
+            >
               <List className="w-4 h-4" />
               Issue Overview
             </TabsTrigger>
-            <TabsTrigger value="manage" className="flex items-center gap-2">
+            <TabsTrigger
+              value="manage"
+              className="flex items-center gap-2 data-[state=active]:bg-white/10 text-gray-400 data-[state=active]:text-white"
+            >
               <Settings className="w-4 h-4" />
               Manage Issues
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            <Card>
+            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
               <CardHeader>
-                <CardTitle>Issue Overview</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-white">Issue Overview</CardTitle>
+                <CardDescription className="text-gray-400">
                   View all common issues and their solutions across your
                   services
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {issues.length === 0 ? (
-                  <div className="text-center py-12 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+                  <div className="text-center py-12 border-2 border-dashed border-white/10 rounded-lg">
                     <div className="space-y-3">
-                      <h3 className="text-lg font-medium text-muted-foreground">
+                      <h3 className="text-lg font-medium text-gray-400">
                         No Common Issues Found
                       </h3>
-                      <p className="text-sm text-muted-foreground/75">
+                      <p className="text-sm text-gray-500">
                         Create your first common issue to help streamline
                         customer support.
                       </p>
@@ -313,7 +323,7 @@ function Issues() {
                     {issues.map((issue: CommonIssue) => (
                       <Card
                         key={issue.id}
-                        className="shadow-sm hover:shadow-md transition-shadow"
+                        className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all duration-300"
                       >
                         <CardContent className="pt-6">
                           <div className="space-y-4">
@@ -321,32 +331,35 @@ function Issues() {
                               <div className="space-y-2 flex-1">
                                 <div className="flex items-center gap-3">
                                   <AlertCircle className="w-5 h-5 text-orange-500" />
-                                  <h3 className="text-xl font-semibold">
+                                  <h3 className="text-xl font-semibold text-white">
                                     {issue.name}
                                   </h3>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <Badge
                                     variant="secondary"
-                                    className="text-xs"
+                                    className="text-xs bg-white/10 text-white border-white/20"
                                   >
                                     {issue.service?.name}
                                   </Badge>
-                                  <Badge variant="outline" className="text-xs">
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs bg-white/10 text-white border-white/20"
+                                  >
                                     {issue.service?.department?.name}
                                   </Badge>
                                 </div>
                               </div>
                             </div>
-                            <p className="text-muted-foreground leading-relaxed">
+                            <p className="text-gray-400 leading-relaxed">
                               {issue.description}
                             </p>
                             <div className="space-y-2">
-                              <h4 className="text-sm font-medium text-muted-foreground">
+                              <h4 className="text-sm font-medium text-gray-400">
                                 Solutions:
                               </h4>
-                              <div className="bg-muted/50 p-4 rounded-lg">
-                                <pre className="text-sm whitespace-pre-wrap text-foreground">
+                              <div className="bg-white/5 backdrop-blur-sm p-4 rounded-lg border border-white/10">
+                                <pre className="text-sm whitespace-pre-wrap text-white">
                                   {typeof issue.solutions === "object"
                                     ? JSON.stringify(issue.solutions, null, 2)
                                     : issue.solutions}
@@ -364,11 +377,13 @@ function Issues() {
           </TabsContent>
 
           <TabsContent value="manage" className="space-y-6">
-            <Card>
+            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                 <div>
-                  <CardTitle>Manage Common Issues</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-white">
+                    Manage Common Issues
+                  </CardTitle>
+                  <CardDescription className="text-gray-400">
                     Create, edit, and delete common issues and their solutions
                   </CardDescription>
                 </div>
@@ -376,7 +391,7 @@ function Issues() {
                   onClick={() => setShowCreateForm(!showCreateForm)}
                   variant={showCreateForm ? "outline" : "default"}
                   size="sm"
-                  className="gap-2"
+                  className="gap-2 bg-white/10 hover:bg-white/20 border-white/20 text-white"
                 >
                   {showCreateForm ? (
                     "Cancel"
@@ -391,10 +406,10 @@ function Issues() {
 
               <CardContent className="space-y-6">
                 {showCreateForm && (
-                  <div className="space-y-6 p-6 bg-muted/30 rounded-lg">
+                  <div className="space-y-6 p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
+                        <label className="text-sm font-medium text-white">
                           Issue Name
                         </label>
                         <Input
@@ -403,24 +418,28 @@ function Issues() {
                           onChange={(e) =>
                             setNewIssue({ ...newIssue, name: e.target.value })
                           }
+                          className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Service</label>
+                        <label className="text-sm font-medium text-white">
+                          Service
+                        </label>
                         <Select
                           value={newIssue.serviceId}
                           onValueChange={(value) =>
                             setNewIssue({ ...newIssue, serviceId: value })
                           }
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="bg-white/5 border-white/10 text-white">
                             <SelectValue placeholder="Select service" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
                             {services.map((service: any) => (
                               <SelectItem
                                 key={service.id}
                                 value={service.id.toString()}
+                                className="text-white hover:bg-white/10"
                               >
                                 {service.name} ({service.department?.name})
                               </SelectItem>
@@ -430,7 +449,9 @@ function Issues() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Description</label>
+                      <label className="text-sm font-medium text-white">
+                        Description
+                      </label>
                       <Input
                         placeholder="Describe the common issue"
                         value={newIssue.description}
@@ -440,10 +461,13 @@ function Issues() {
                             description: e.target.value,
                           })
                         }
+                        className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Solutions</label>
+                      <label className="text-sm font-medium text-white">
+                        Solutions
+                      </label>
                       <Textarea
                         placeholder="Provide solutions (JSON format or plain text)"
                         value={newIssue.solutions}
@@ -453,10 +477,13 @@ function Issues() {
                             solutions: e.target.value,
                           })
                         }
-                        className="min-h-[100px]"
+                        className="min-h-[100px] bg-white/5 border-white/10 text-white placeholder:text-gray-500"
                       />
                     </div>
-                    <Button onClick={createIssue} className="gap-2">
+                    <Button
+                      onClick={createIssue}
+                      className="gap-2 bg-white/10 hover:bg-white/20 text-white"
+                    >
                       <Plus className="w-4 h-4" />
                       Create Issue
                     </Button>
@@ -464,12 +491,12 @@ function Issues() {
                 )}
 
                 {issues.length === 0 ? (
-                  <div className="text-center py-12 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+                  <div className="text-center py-12 border-2 border-dashed border-white/10 rounded-lg">
                     <div className="space-y-3">
-                      <h3 className="text-lg font-medium text-muted-foreground">
+                      <h3 className="text-lg font-medium text-gray-400">
                         No Common Issues Found
                       </h3>
-                      <p className="text-sm text-muted-foreground/75">
+                      <p className="text-sm text-gray-500">
                         Create your first common issue to get started.
                       </p>
                     </div>
@@ -477,13 +504,16 @@ function Issues() {
                 ) : (
                   <div className="grid gap-4">
                     {issues.map((issue: CommonIssue) => (
-                      <Card key={issue.id} className="shadow-sm">
+                      <Card
+                        key={issue.id}
+                        className="bg-white/5 backdrop-blur-sm border-white/10"
+                      >
                         <CardContent className="pt-6">
                           {editingIssue && editingIssue.id === issue.id ? (
                             <div className="space-y-4">
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                  <label className="text-sm font-medium">
+                                  <label className="text-sm font-medium text-white">
                                     Issue Name
                                   </label>
                                   <Input
@@ -494,10 +524,11 @@ function Issues() {
                                         name: e.target.value,
                                       })
                                     }
+                                    className="bg-white/5 border-white/10 text-white"
                                   />
                                 </div>
                                 <div className="space-y-2">
-                                  <label className="text-sm font-medium">
+                                  <label className="text-sm font-medium text-white">
                                     Service
                                   </label>
                                   <Select
@@ -509,14 +540,15 @@ function Issues() {
                                       })
                                     }
                                   >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
                                       <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
                                       {services.map((service: any) => (
                                         <SelectItem
                                           key={service.id}
                                           value={service.id.toString()}
+                                          className="text-white hover:bg-white/10"
                                         >
                                           {service.name} (
                                           {service.department?.name})
@@ -527,7 +559,7 @@ function Issues() {
                                 </div>
                               </div>
                               <div className="space-y-2">
-                                <label className="text-sm font-medium">
+                                <label className="text-sm font-medium text-white">
                                   Description
                                 </label>
                                 <Input
@@ -538,10 +570,11 @@ function Issues() {
                                       description: e.target.value,
                                     })
                                   }
+                                  className="bg-white/5 border-white/10 text-white"
                                 />
                               </div>
                               <div className="space-y-2">
-                                <label className="text-sm font-medium">
+                                <label className="text-sm font-medium text-white">
                                   Solutions
                                 </label>
                                 <Textarea
@@ -552,17 +585,22 @@ function Issues() {
                                       solutions: e.target.value,
                                     })
                                   }
-                                  className="min-h-[100px]"
+                                  className="min-h-[100px] bg-white/5 border-white/10 text-white"
                                 />
                               </div>
                               <div className="flex gap-2">
-                                <Button onClick={updateIssue} size="sm">
+                                <Button
+                                  onClick={updateIssue}
+                                  size="sm"
+                                  className="bg-white/10 hover:bg-white/20 text-white"
+                                >
                                   Save Changes
                                 </Button>
                                 <Button
                                   onClick={cancelEdit}
                                   variant="outline"
                                   size="sm"
+                                  className="bg-white/5 hover:bg-white/10 border-white/20 text-white"
                                 >
                                   Cancel
                                 </Button>
@@ -574,34 +612,34 @@ function Issues() {
                                 <div className="space-y-2">
                                   <div className="flex items-center gap-3">
                                     <AlertCircle className="w-5 h-5 text-orange-500" />
-                                    <h3 className="text-xl font-semibold">
+                                    <h3 className="text-xl font-semibold text-white">
                                       {issue.name}
                                     </h3>
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <Badge
                                       variant="secondary"
-                                      className="text-xs"
+                                      className="text-xs bg-white/10 text-white border-white/20"
                                     >
                                       {issue.service?.name}
                                     </Badge>
                                     <Badge
                                       variant="outline"
-                                      className="text-xs"
+                                      className="text-xs bg-white/10 text-white border-white/20"
                                     >
                                       {issue.service?.department?.name}
                                     </Badge>
                                   </div>
                                 </div>
-                                <p className="text-muted-foreground leading-relaxed">
+                                <p className="text-gray-400 leading-relaxed">
                                   {issue.description}
                                 </p>
                                 <div className="space-y-2">
-                                  <h4 className="text-sm font-medium text-muted-foreground">
+                                  <h4 className="text-sm font-medium text-gray-400">
                                     Solutions:
                                   </h4>
-                                  <div className="bg-muted/50 p-4 rounded-lg max-h-[150px] overflow-auto">
-                                    <pre className="text-sm whitespace-pre-wrap text-foreground">
+                                  <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-4 rounded-lg max-h-[150px] overflow-auto">
+                                    <pre className="text-sm whitespace-pre-wrap text-white">
                                       {typeof issue.solutions === "object"
                                         ? JSON.stringify(
                                             issue.solutions,
@@ -618,7 +656,7 @@ function Issues() {
                                   onClick={() => startEdit(issue)}
                                   variant="outline"
                                   size="sm"
-                                  className="gap-2"
+                                  className="gap-2 bg-white/5 hover:bg-white/10 border-white/20 text-white"
                                 >
                                   <Edit3 className="w-4 h-4" />
                                   Edit
@@ -628,18 +666,18 @@ function Issues() {
                                     <Button
                                       variant="destructive"
                                       size="sm"
-                                      className="gap-2"
+                                      className="gap-2 bg-red-500/20 hover:bg-red-500/30 border-red-500/30 text-red-400"
                                     >
                                       <Trash2 className="w-4 h-4" />
                                       Delete
                                     </Button>
                                   </AlertDialogTrigger>
-                                  <AlertDialogContent>
+                                  <AlertDialogContent className="bg-black/95 backdrop-blur-xl border-white/10">
                                     <AlertDialogHeader>
-                                      <AlertDialogTitle>
+                                      <AlertDialogTitle className="text-white">
                                         Delete Common Issue
                                       </AlertDialogTitle>
-                                      <AlertDialogDescription>
+                                      <AlertDialogDescription className="text-gray-400">
                                         Are you sure you want to delete "
                                         {issue.name}"? This action cannot be
                                         undone and will remove the issue and all
@@ -647,12 +685,12 @@ function Issues() {
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
-                                      <AlertDialogCancel>
+                                      <AlertDialogCancel className="bg-white/5 hover:bg-white/10 border-white/20 text-white">
                                         Cancel
                                       </AlertDialogCancel>
                                       <AlertDialogAction
                                         onClick={() => deleteIssue(issue.id)}
-                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                        className="bg-red-500/20 hover:bg-red-500/30 border-red-500/30 text-red-400"
                                       >
                                         Delete Issue
                                       </AlertDialogAction>

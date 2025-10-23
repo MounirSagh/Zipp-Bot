@@ -12,7 +12,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <AppSidebar />
       <SidebarInset>
         <Navbar />
-        <main className="flex-1 p-6 pt-6 bg-background min-h-screen">
+        <main className="flex-1 p-6 pt-6 bg-black min-h-screen">
           {children}
         </main>
       </SidebarInset>

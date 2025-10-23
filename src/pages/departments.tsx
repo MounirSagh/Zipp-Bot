@@ -1,4 +1,5 @@
 import { Layout } from "@/components/Layout";
+import Loading from "@/components/Loading";
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { departmentsAPI, companyAPI } from "../services/api";
@@ -39,6 +40,7 @@ function Departments() {
   const { user } = useUser();
   const [departments, setDepartments] = useState<Department[]>([]);
   const [company, setCompany] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(
     null
@@ -50,35 +52,33 @@ function Departments() {
 
   useEffect(() => {
     if (user?.id) {
-      loadCompany();
-      loadDepartments();
+      loadAllData();
     }
   }, [user]);
 
-  const loadCompany = async () => {
+  const loadAllData = async () => {
     if (!user?.id) return;
 
     try {
-      const data = await companyAPI.getByCompanyId(user.id);
-      if (data && data.length > 0) {
-        setCompany(data[0]);
-      }
-    } catch (error) {
-      console.error("Error loading company:", error);
-    }
-  };
+      setLoading(true);
 
-  const loadDepartments = async () => {
-    if (!user?.id) return;
-
-    try {
+      // Get company data
       const companies = await companyAPI.getByCompanyId(user.id);
-      if (companies && companies.length > 0) {
-        const data = await departmentsAPI.getByCompany(companies[0].id);
-        setDepartments(data);
+      if (!companies || companies.length === 0) {
+        setLoading(false);
+        return;
       }
+
+      const companyData = companies[0];
+      setCompany(companyData);
+
+      // Get departments
+      const depts = await departmentsAPI.getByCompany(companyData.id);
+      setDepartments(depts);
     } catch (error) {
-      console.error("Error loading departments:", error);
+      console.error("Error loading data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -92,7 +92,7 @@ function Departments() {
       });
       setNewDepartment({ name: "", description: "" });
       setShowCreateForm(false);
-      loadDepartments();
+      loadAllData();
     } catch (error) {
       console.error("Error creating department:", error);
     }
@@ -108,7 +108,7 @@ function Departments() {
         companyId: editingDepartment.companyId,
       });
       setEditingDepartment(null);
-      loadDepartments();
+      loadAllData();
     } catch (error) {
       console.error("Error updating department:", error);
     }
@@ -118,7 +118,7 @@ function Departments() {
     if (confirm("Are you sure you want to delete this department?")) {
       try {
         await departmentsAPI.delete(id);
-        loadDepartments();
+        loadAllData();
       } catch (error) {
         console.error("Error deleting department:", error);
       }
@@ -133,12 +133,10 @@ function Departments() {
     setEditingDepartment(null);
   };
 
-  if (!user) {
+  if (!user || loading) {
     return (
       <Layout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-muted-foreground">Loading...</div>
-        </div>
+        <Loading />
       </Layout>
     );
   }
@@ -148,24 +146,30 @@ function Departments() {
       <Layout>
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">Departments</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-3xl font-bold tracking-tight text-white">
+              Departments
+            </h1>
+            <p className="text-gray-400">
               Manage your organization's departments and structure
             </p>
           </div>
 
-          <Card>
+          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
             <CardContent className="pt-6">
-              <div className="text-center py-16 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+              <div className="text-center py-16 border-2 border-dashed border-white/10 rounded-lg">
                 <div className="space-y-3">
-                  <h3 className="text-lg font-medium text-muted-foreground">
+                  <h3 className="text-lg font-medium text-gray-400">
                     No Company Profile Found
                   </h3>
-                  <p className="text-sm text-muted-foreground/75 max-w-md mx-auto">
+                  <p className="text-sm text-gray-500 max-w-md mx-auto">
                     Please set up your company information first before managing
                     departments.
                   </p>
-                  <Button variant="outline" asChild className="mt-4">
+                  <Button
+                    variant="outline"
+                    asChild
+                    className="mt-4 bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                  >
                     <a href="/WjN2Y1hMTk5saEFneUZZeWZScW1uUjVkRkJoU0E9PQ/general">
                       Setup Company Profile
                     </a>
@@ -183,40 +187,50 @@ function Departments() {
     <Layout>
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Departments</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold tracking-tight text-white">
+            Departments
+          </h1>
+          <p className="text-gray-400">
             Manage {company.name}'s organizational structure and departments
           </p>
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-2 bg-white/5 backdrop-blur-xl border border-white/10">
+            <TabsTrigger
+              value="overview"
+              className="flex items-center gap-2 data-[state=active]:bg-white/10 text-gray-400 data-[state=active]:text-white"
+            >
               <Users className="w-4 h-4" />
               Department Overview
             </TabsTrigger>
-            <TabsTrigger value="manage" className="flex items-center gap-2">
+            <TabsTrigger
+              value="manage"
+              className="flex items-center gap-2 data-[state=active]:bg-white/10 text-gray-400 data-[state=active]:text-white"
+            >
               <Settings className="w-4 h-4" />
               Manage Departments
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            <Card>
+            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
               <CardHeader>
-                <CardTitle>Department Overview</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-white">
+                  Department Overview
+                </CardTitle>
+                <CardDescription className="text-gray-400">
                   View all departments in your organization
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {departments.length === 0 ? (
-                  <div className="text-center py-12 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+                  <div className="text-center py-12 border-2 border-dashed border-white/10 rounded-lg">
                     <div className="space-y-3">
-                      <h3 className="text-lg font-medium text-muted-foreground">
+                      <h3 className="text-lg font-medium text-gray-400">
                         No Departments Found
                       </h3>
-                      <p className="text-sm text-muted-foreground/75">
+                      <p className="text-sm text-gray-500">
                         Create your first department to get started with
                         organizing your company structure.
                       </p>
@@ -227,20 +241,23 @@ function Departments() {
                     {departments.map((department: any) => (
                       <Card
                         key={department.id}
-                        className="shadow-sm hover:shadow-md transition-shadow"
+                        className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all duration-300"
                       >
                         <CardContent className="pt-6">
                           <div className="flex items-start justify-between">
                             <div className="space-y-3 flex-1">
                               <div className="flex items-center gap-3">
-                                <h3 className="text-xl font-semibold">
+                                <h3 className="text-xl font-semibold text-white">
                                   {department.name}
                                 </h3>
-                                <Badge variant="secondary" className="text-xs">
+                                <Badge
+                                  variant="secondary"
+                                  className="text-xs bg-white/10 text-white border-white/20"
+                                >
                                   {department.services?.length || 0} services
                                 </Badge>
                               </div>
-                              <p className="text-muted-foreground leading-relaxed">
+                              <p className="text-gray-400 leading-relaxed">
                                 {department.description}
                               </p>
                             </div>
@@ -255,11 +272,13 @@ function Departments() {
           </TabsContent>
 
           <TabsContent value="manage" className="space-y-6">
-            <Card>
+            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                 <div>
-                  <CardTitle>Manage Departments</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-white">
+                    Manage Departments
+                  </CardTitle>
+                  <CardDescription className="text-gray-400">
                     Create, edit, and delete departments in your organization
                   </CardDescription>
                 </div>
@@ -267,7 +286,7 @@ function Departments() {
                   onClick={() => setShowCreateForm(!showCreateForm)}
                   variant={showCreateForm ? "outline" : "default"}
                   size="sm"
-                  className="gap-2"
+                  className="gap-2 bg-white/10 hover:bg-white/20 border-white/20 text-white"
                 >
                   {showCreateForm ? (
                     "Cancel"
@@ -282,10 +301,10 @@ function Departments() {
 
               <CardContent className="space-y-6">
                 {showCreateForm && (
-                  <div className="space-y-6 p-6 bg-muted/30 rounded-lg">
+                  <div className="space-y-6 p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg">
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
+                        <label className="text-sm font-medium text-white">
                           Department Name
                         </label>
                         <Input
@@ -297,10 +316,11 @@ function Departments() {
                               name: e.target.value,
                             })
                           }
+                          className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">
+                        <label className="text-sm font-medium text-white">
                           Description
                         </label>
                         <Input
@@ -312,10 +332,14 @@ function Departments() {
                               description: e.target.value,
                             })
                           }
+                          className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
                         />
                       </div>
                     </div>
-                    <Button onClick={createDepartment} className="gap-2">
+                    <Button
+                      onClick={createDepartment}
+                      className="gap-2 bg-white/10 hover:bg-white/20 text-white"
+                    >
                       <Plus className="w-4 h-4" />
                       Create Department
                     </Button>
@@ -323,12 +347,12 @@ function Departments() {
                 )}
 
                 {departments.length === 0 ? (
-                  <div className="text-center py-12 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+                  <div className="text-center py-12 border-2 border-dashed border-white/10 rounded-lg">
                     <div className="space-y-3">
-                      <h3 className="text-lg font-medium text-muted-foreground">
+                      <h3 className="text-lg font-medium text-gray-400">
                         No Departments Found
                       </h3>
-                      <p className="text-sm text-muted-foreground/75">
+                      <p className="text-sm text-gray-500">
                         Create your first department to get started.
                       </p>
                     </div>
@@ -336,13 +360,16 @@ function Departments() {
                 ) : (
                   <div className="grid gap-4">
                     {departments.map((department: any) => (
-                      <Card key={department.id} className="shadow-sm">
+                      <Card
+                        key={department.id}
+                        className="bg-white/5 backdrop-blur-sm border-white/10"
+                      >
                         <CardContent className="pt-6">
                           {editingDepartment &&
                           editingDepartment.id === department.id ? (
                             <div className="space-y-4">
                               <div className="space-y-2">
-                                <label className="text-sm font-medium">
+                                <label className="text-sm font-medium text-white">
                                   Department Name
                                 </label>
                                 <Input
@@ -353,10 +380,11 @@ function Departments() {
                                       name: e.target.value,
                                     })
                                   }
+                                  className="bg-white/5 border-white/10 text-white"
                                 />
                               </div>
                               <div className="space-y-2">
-                                <label className="text-sm font-medium">
+                                <label className="text-sm font-medium text-white">
                                   Description
                                 </label>
                                 <Input
@@ -367,16 +395,22 @@ function Departments() {
                                       description: e.target.value,
                                     })
                                   }
+                                  className="bg-white/5 border-white/10 text-white"
                                 />
                               </div>
                               <div className="flex gap-2">
-                                <Button onClick={updateDepartment} size="sm">
+                                <Button
+                                  onClick={updateDepartment}
+                                  size="sm"
+                                  className="bg-white/10 hover:bg-white/20 text-white"
+                                >
                                   Save Changes
                                 </Button>
                                 <Button
                                   onClick={cancelEdit}
                                   variant="outline"
                                   size="sm"
+                                  className="bg-white/5 hover:bg-white/10 border-white/20 text-white"
                                 >
                                   Cancel
                                 </Button>
@@ -386,17 +420,17 @@ function Departments() {
                             <div className="flex items-start justify-between">
                               <div className="space-y-3 flex-1">
                                 <div className="flex items-center gap-3">
-                                  <h3 className="text-xl font-semibold">
+                                  <h3 className="text-xl font-semibold text-white">
                                     {department.name}
                                   </h3>
                                   <Badge
                                     variant="secondary"
-                                    className="text-xs"
+                                    className="text-xs bg-white/10 text-white border-white/20"
                                   >
                                     {department.services?.length || 0} services
                                   </Badge>
                                 </div>
-                                <p className="text-muted-foreground leading-relaxed">
+                                <p className="text-gray-400 leading-relaxed">
                                   {department.description}
                                 </p>
                               </div>
@@ -405,7 +439,7 @@ function Departments() {
                                   onClick={() => startEdit(department)}
                                   variant="outline"
                                   size="sm"
-                                  className="gap-2"
+                                  className="gap-2 bg-white/5 hover:bg-white/10 border-white/20 text-white"
                                 >
                                   <Edit3 className="w-4 h-4" />
                                   Edit
@@ -415,18 +449,18 @@ function Departments() {
                                     <Button
                                       variant="destructive"
                                       size="sm"
-                                      className="gap-2"
+                                      className="gap-2 bg-red-500/20 hover:bg-red-500/30 border-red-500/30 text-red-400"
                                     >
                                       <Trash2 className="w-4 h-4" />
                                       Delete
                                     </Button>
                                   </AlertDialogTrigger>
-                                  <AlertDialogContent>
+                                  <AlertDialogContent className="bg-black/95 backdrop-blur-xl border-white/10">
                                     <AlertDialogHeader>
-                                      <AlertDialogTitle>
+                                      <AlertDialogTitle className="text-white">
                                         Delete Department
                                       </AlertDialogTitle>
-                                      <AlertDialogDescription>
+                                      <AlertDialogDescription className="text-gray-400">
                                         Are you sure you want to delete "
                                         {department.name}"? This action cannot
                                         be undone and will also remove all
@@ -434,14 +468,14 @@ function Departments() {
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
-                                      <AlertDialogCancel>
+                                      <AlertDialogCancel className="bg-white/5 hover:bg-white/10 border-white/20 text-white">
                                         Cancel
                                       </AlertDialogCancel>
                                       <AlertDialogAction
                                         onClick={() =>
                                           deleteDepartment(department.id)
                                         }
-                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                        className="bg-red-500/20 hover:bg-red-500/30 border-red-500/30 text-red-400"
                                       >
                                         Delete Department
                                       </AlertDialogAction>
