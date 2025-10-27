@@ -1,5 +1,6 @@
-const API_BASE_URL = "https://aivo-backend.vercel.app/api";
+// const API_BASE_URL = "https://aivo-backend.vercel.app/api";
 
+const API_BASE_URL = "http://localhost:3000/api";
 // Company API calls
 export const companyAPI = {
   create: async (data: any) => {

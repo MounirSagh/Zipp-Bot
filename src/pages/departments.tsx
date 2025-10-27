@@ -130,7 +130,7 @@ function Departments() {
     try {
       await departmentsAPI.create({
         ...formData,
-        companyId: company.id,
+        companyId: user?.id,
       });
       setFormData({ name: "", description: "" });
       setIsAddDialogOpen(false);
@@ -148,7 +148,7 @@ function Departments() {
       await departmentsAPI.update(selectedDepartment.id, {
         name: formData.name,
         description: formData.description,
-        companyId: selectedDepartment.companyId,
+        companyId: user?.id,
       });
       setIsEditDialogOpen(false);
       setSelectedDepartment(null);
