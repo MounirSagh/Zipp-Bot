@@ -2,7 +2,7 @@ import { Layout } from "@/components/Layout";
 import Loading from "@/components/Loading";
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
-import { companyAPI, searchAPI, departmentsAPI } from "../services/api";
+import { companyAPI, searchAPI } from "../services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,7 +20,6 @@ import { Search, Plus, Edit3, Users, User } from "lucide-react";
 function General() {
   const { user } = useUser();
   const [company, setCompany] = useState<any>(null);
-  const [departments, setDepartments] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -54,10 +53,6 @@ function General() {
           field: companyData.field,
           description: companyData.description,
         });
-
-        // Get departments
-        const depts = await departmentsAPI.getByCompany(companyData.id);
-        setDepartments(depts);
       }
     } catch (error) {
       console.error("Error loading data:", error);
@@ -245,7 +240,7 @@ function General() {
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-400 bg-white/5 px-3 py-2 rounded-md border border-white/10">
                         <Users className="w-4 h-4" />
-                        {departments.length} departments
+                        {company.departments.length} departments
                       </div>
                     </div>
                     <Separator className="bg-white/10" />

@@ -59,10 +59,12 @@ export const departmentsAPI = {
     return response.json();
   },
 
-  getByCompany: async (companyId: number) => {
-    const response = await fetch(
-      `${API_BASE_URL}/departments/company/${companyId}`
-    );
+  getByCompany: async (companyId: string, page?: number, limit?: number) => {
+    let url = `${API_BASE_URL}/departments/company/${companyId}`;
+    if (page !== undefined && limit !== undefined) {
+      url += `?page=${page}&limit=${limit}`;
+    }
+    const response = await fetch(url);
     return response.json();
   },
 
@@ -104,10 +106,16 @@ export const servicesAPI = {
     return response.json();
   },
 
-  getByDepartment: async (departmentId: number) => {
-    const response = await fetch(
-      `${API_BASE_URL}/services/department/${departmentId}`
-    );
+  getByDepartment: async (
+    departmentId: number,
+    page?: number,
+    limit?: number
+  ) => {
+    let url = `${API_BASE_URL}/services/department/${departmentId}`;
+    if (page !== undefined && limit !== undefined) {
+      url += `?page=${page}&limit=${limit}`;
+    }
+    const response = await fetch(url);
     return response.json();
   },
 
@@ -149,10 +157,12 @@ export const commonIssuesAPI = {
     return response.json();
   },
 
-  getByService: async (serviceId: number) => {
-    const response = await fetch(
-      `${API_BASE_URL}/common-issues/service/${serviceId}`
-    );
+  getByService: async (serviceId: number, page?: number, limit?: number) => {
+    let url = `${API_BASE_URL}/common-issues/service/${serviceId}`;
+    if (page !== undefined && limit !== undefined) {
+      url += `?page=${page}&limit=${limit}`;
+    }
+    const response = await fetch(url);
     return response.json();
   },
 

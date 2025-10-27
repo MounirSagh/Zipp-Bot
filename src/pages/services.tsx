@@ -13,7 +13,23 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -30,9 +46,17 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, Edit3, Trash2, Settings, List, Contact } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { Plus, Trash2, Contact, Edit2 } from "lucide-react";
 
 interface Service {
   id: number;
@@ -50,20 +74,26 @@ function Services() {
   const [departments, setDepartments] = useState<any[]>([]);
   const [company, setCompany] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingService, setEditingService] = useState<Service | null>(null);
-  const [newService, setNewService] = useState({
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [formData, setFormData] = useState({
     name: "",
     description: "",
     contacts: "",
     departmentId: "",
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [, setTotalItems] = useState(0);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     if (user?.id) {
       loadAllData();
     }
-  }, [user]);
+  }, [user, currentPage]);
 
   const loadAllData = async () => {
     if (!user?.id) return;
@@ -71,7 +101,6 @@ function Services() {
     try {
       setLoading(true);
 
-      // Step 1: Get company (single call)
       const companies = await companyAPI.getByCompanyId(user.id);
       if (!companies || companies.length === 0) {
         setLoading(false);
@@ -81,19 +110,29 @@ function Services() {
       const companyData = companies[0];
       setCompany(companyData);
 
-      // Step 2: Get departments
-      const depts = await departmentsAPI.getByCompany(companyData.id);
+      const depts = await departmentsAPI.getByCompany(user?.id);
       setDepartments(depts);
 
-      // Step 3: Get all services in parallel (not sequential!)
-      if (depts.length > 0) {
-        const servicePromises = depts.map((dept: any) =>
-          servicesAPI.getByDepartment(dept.id)
-        );
-        const servicesArrays = await Promise.all(servicePromises);
-        const allServices = servicesArrays.flat();
-        setServices(allServices);
+      if (depts.length === 0) {
+        setLoading(false);
+        return;
       }
+
+      const servicePromises = depts.map((dept: any) =>
+        servicesAPI.getByDepartment(dept.id)
+      );
+      const servicesArrays = await Promise.all(servicePromises);
+      const allServices = servicesArrays.flat();
+
+      // Calculate pagination on the aggregated results
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedServices = allServices.slice(startIndex, endIndex);
+
+      setServices(paginatedServices);
+      console.log(paginatedServices);
+      setTotalItems(allServices.length);
+      setTotalPages(Math.ceil(allServices.length / itemsPerPage));
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {
@@ -104,16 +143,17 @@ function Services() {
   const createService = async () => {
     try {
       await servicesAPI.create({
-        ...newService,
-        departmentId: parseInt(newService.departmentId),
+        ...formData,
+        departmentId: parseInt(formData.departmentId),
       });
-      setNewService({
+      setFormData({
         name: "",
         description: "",
         contacts: "",
         departmentId: "",
       });
-      setShowCreateForm(false);
+      setIsAddDialogOpen(false);
+      setCurrentPage(1);
       loadAllData();
     } catch (error) {
       console.error("Error creating service:", error);
@@ -121,39 +161,81 @@ function Services() {
   };
 
   const updateService = async () => {
-    if (!editingService) return;
+    if (!selectedService) return;
 
     try {
-      await servicesAPI.update(editingService.id, {
-        name: editingService.name,
-        description: editingService.description,
-        contacts: editingService.contacts,
-        departmentId: editingService.departmentId,
+      await servicesAPI.update(selectedService.id, {
+        name: formData.name,
+        description: formData.description,
+        contacts: formData.contacts,
+        departmentId: parseInt(formData.departmentId),
       });
-      setEditingService(null);
+      setIsEditDialogOpen(false);
+      setSelectedService(null);
+      setFormData({
+        name: "",
+        description: "",
+        contacts: "",
+        departmentId: "",
+      });
       loadAllData();
     } catch (error) {
       console.error("Error updating service:", error);
     }
   };
 
-  const deleteService = async (id: number) => {
-    if (confirm("Are you sure you want to delete this service?")) {
-      try {
-        await servicesAPI.delete(id);
-        loadAllData();
-      } catch (error) {
-        console.error("Error deleting service:", error);
+  const deleteService = async () => {
+    if (!selectedService) return;
+
+    try {
+      await servicesAPI.delete(selectedService.id);
+      setIsDeleteDialogOpen(false);
+      setSelectedService(null);
+      // If current page becomes empty after deletion, go to previous page
+      if (services.length === 1 && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
       }
+      loadAllData();
+    } catch (error) {
+      console.error("Error deleting service:", error);
     }
   };
 
-  const startEdit = (service: Service) => {
-    setEditingService({ ...service });
+  const openEditDialog = (service: Service) => {
+    setSelectedService(service);
+    setFormData({
+      name: service.name,
+      description: service.description,
+      contacts: service.contacts,
+      departmentId: service.departmentId.toString(),
+    });
+    setIsEditDialogOpen(true);
   };
 
-  const cancelEdit = () => {
-    setEditingService(null);
+  const openDeleteDialog = (service: Service) => {
+    setSelectedService(service);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleAddDialogClose = () => {
+    setIsAddDialogOpen(false);
+    setFormData({
+      name: "",
+      description: "",
+      contacts: "",
+      departmentId: "",
+    });
+  };
+
+  const handleEditDialogClose = () => {
+    setIsEditDialogOpen(false);
+    setSelectedService(null);
+    setFormData({
+      name: "",
+      description: "",
+      contacts: "",
+      departmentId: "",
+    });
   };
 
   if (!user || loading) {
@@ -230,427 +312,429 @@ function Services() {
   return (
     <Layout>
       <div className="max-w-6xl mx-auto space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-white">
-            Services
-          </h1>
-          <p className="text-gray-400">
-            Manage {company.name}'s services and customer support offerings
-          </p>
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight text-white">
+              Services
+            </h1>
+            <p className="text-gray-400">
+              Manage {company.name}'s services and customer support offerings
+            </p>
+          </div>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2 bg-white/10 hover:bg-white/20 border-white/20 text-white">
+                <Plus className="w-4 h-4" />
+                Add Service
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-black/95 backdrop-blur-xl border-white/10 max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="text-white">
+                  Add New Service
+                </DialogTitle>
+                <DialogDescription className="text-gray-400">
+                  Create a new service for your organization.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="add-name"
+                      className="text-sm font-medium text-white"
+                    >
+                      Service Name
+                    </Label>
+                    <Input
+                      id="add-name"
+                      placeholder="e.g. Technical Support, Customer Service"
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="add-department"
+                      className="text-sm font-medium text-white"
+                    >
+                      Department
+                    </Label>
+                    <Select
+                      value={formData.departmentId}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, departmentId: value })
+                      }
+                    >
+                      <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                        <SelectValue placeholder="Select department" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
+                        {departments.map((department: any) => (
+                          <SelectItem
+                            key={department.id}
+                            value={department.id.toString()}
+                            className="text-white hover:bg-white/10"
+                          >
+                            {department.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="add-description"
+                    className="text-sm font-medium text-white"
+                  >
+                    Description
+                  </Label>
+                  <Input
+                    id="add-description"
+                    placeholder="Describe what this service offers"
+                    value={formData.description}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
+                    className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="add-contacts"
+                    className="text-sm font-medium text-white"
+                  >
+                    Contact Information
+                  </Label>
+                  <Input
+                    id="add-contacts"
+                    placeholder="e.g. support@company.com, +1-555-0123"
+                    value={formData.contacts}
+                    onChange={(e) =>
+                      setFormData({ ...formData, contacts: e.target.value })
+                    }
+                    className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={handleAddDialogClose}
+                  className="bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={createService}
+                  className="bg-white/10 hover:bg-white/20 text-white"
+                >
+                  Create Service
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 bg-white/5 backdrop-blur-xl border border-white/10">
-            <TabsTrigger
-              value="overview"
-              className="flex items-center gap-2 data-[state=active]:bg-white/10 text-gray-400 data-[state=active]:text-white"
-            >
-              <List className="w-4 h-4" />
-              Service Overview
-            </TabsTrigger>
-            <TabsTrigger
-              value="manage"
-              className="flex items-center gap-2 data-[state=active]:bg-white/10 text-gray-400 data-[state=active]:text-white"
-            >
-              <Settings className="w-4 h-4" />
-              Manage Services
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="space-y-6">
-            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-              <CardHeader>
-                <CardTitle className="text-white">Service Overview</CardTitle>
-                <CardDescription className="text-gray-400">
-                  View all services across your organization's departments
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {services.length === 0 ? (
-                  <div className="text-center py-12 border-2 border-dashed border-white/10 rounded-lg">
-                    <div className="space-y-3">
-                      <h3 className="text-lg font-medium text-gray-400">
-                        No Services Found
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        Create your first service to start managing customer
-                        support offerings.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="grid gap-4">
-                    {services.map((service: Service) => (
-                      <Card
-                        key={service.id}
-                        className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all duration-300"
-                      >
-                        <CardContent className="pt-6">
-                          <div className="flex items-start justify-between">
-                            <div className="space-y-3 flex-1">
-                              <div className="flex items-center gap-3">
-                                <h3 className="text-xl font-semibold text-white">
-                                  {service.name}
-                                </h3>
-                                <Badge
-                                  variant="secondary"
-                                  className="text-xs bg-white/10 text-white border-white/20"
-                                >
-                                  {service.department?.name}
-                                </Badge>
-                              </div>
-                              <p className="text-gray-400 leading-relaxed">
-                                {service.description}
-                              </p>
-                              <div className="flex items-center gap-2 text-sm text-gray-400">
-                                <Contact className="w-4 h-4" />
-                                <span>{service.contacts}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Badge
-                                  variant="outline"
-                                  className="text-xs bg-white/10 text-white border-white/20"
-                                >
-                                  {service.commonIssues?.length || 0} common
-                                  issues
-                                </Badge>
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="manage" className="space-y-6">
-            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <div>
-                  <CardTitle className="text-white">Manage Services</CardTitle>
-                  <CardDescription className="text-gray-400">
-                    Create, edit, and delete services in your organization
-                  </CardDescription>
+        <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+          <CardHeader>
+            <CardTitle className="text-white">All Services</CardTitle>
+            <CardDescription className="text-gray-400">
+              View and manage all services across your organization's
+              departments
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {services.length === 0 ? (
+              <div className="text-center py-12 border-2 border-dashed border-white/10 rounded-lg">
+                <div className="space-y-3">
+                  <h3 className="text-lg font-medium text-gray-400">
+                    No Services Found
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    Create your first service to start managing customer support
+                    offerings.
+                  </p>
                 </div>
-                <Button
-                  onClick={() => setShowCreateForm(!showCreateForm)}
-                  variant={showCreateForm ? "outline" : "default"}
-                  size="sm"
-                  className="gap-2 bg-white/10 hover:bg-white/20 border-white/20 text-white"
-                >
-                  {showCreateForm ? (
-                    "Cancel"
-                  ) : (
-                    <>
-                      <Plus className="w-4 h-4" />
-                      New Service
-                    </>
-                  )}
-                </Button>
-              </CardHeader>
-
-              <CardContent className="space-y-6">
-                {showCreateForm && (
-                  <div className="space-y-6 p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-white">
-                          Service Name
-                        </label>
-                        <Input
-                          placeholder="e.g. Technical Support, Customer Service"
-                          value={newService.name}
-                          onChange={(e) =>
-                            setNewService({
-                              ...newService,
-                              name: e.target.value,
-                            })
-                          }
-                          className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-white">
-                          Department
-                        </label>
-                        <Select
-                          value={newService.departmentId}
-                          onValueChange={(value) =>
-                            setNewService({
-                              ...newService,
-                              departmentId: value,
-                            })
-                          }
-                        >
-                          <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                            <SelectValue placeholder="Select department" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
-                            {departments.map((department: any) => (
-                              <SelectItem
-                                key={department.id}
-                                value={department.id.toString()}
-                                className="text-white hover:bg-white/10"
-                              >
-                                {department.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-white">
+              </div>
+            ) : (
+              <div className="rounded-md border border-white/10">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-white/10 hover:bg-white/5">
+                      <TableHead className="text-gray-400">Name</TableHead>
+                      <TableHead className="text-gray-400">
+                        Department
+                      </TableHead>
+                      <TableHead className="text-gray-400">
                         Description
-                      </label>
-                      <Input
-                        placeholder="Describe what this service offers"
-                        value={newService.description}
-                        onChange={(e) =>
-                          setNewService({
-                            ...newService,
-                            description: e.target.value,
-                          })
-                        }
-                        className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-white">
-                        Contact Information
-                      </label>
-                      <Input
-                        placeholder="e.g. support@company.com, +1-555-0123"
-                        value={newService.contacts}
-                        onChange={(e) =>
-                          setNewService({
-                            ...newService,
-                            contacts: e.target.value,
-                          })
-                        }
-                        className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-                      />
-                    </div>
-                    <Button
-                      onClick={createService}
-                      className="gap-2 bg-white/10 hover:bg-white/20 text-white"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Create Service
-                    </Button>
-                  </div>
-                )}
-
-                {services.length === 0 ? (
-                  <div className="text-center py-12 border-2 border-dashed border-white/10 rounded-lg">
-                    <div className="space-y-3">
-                      <h3 className="text-lg font-medium text-gray-400">
-                        No Services Found
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        Create your first service to get started.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="grid gap-4">
-                    {services.map((service: Service) => (
-                      <Card
+                      </TableHead>
+                      <TableHead className="text-gray-400">Contact</TableHead>
+                      <TableHead className="text-gray-400">Issues</TableHead>
+                      <TableHead className="text-right text-gray-400">
+                        Actions
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {services.map((service) => (
+                      <TableRow
                         key={service.id}
-                        className="bg-white/5 backdrop-blur-sm border-white/10"
+                        className="border-white/10 hover:bg-white/5"
                       >
-                        <CardContent className="pt-6">
-                          {editingService &&
-                          editingService.id === service.id ? (
-                            <div className="space-y-4">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                  <label className="text-sm font-medium text-white">
-                                    Service Name
-                                  </label>
-                                  <Input
-                                    value={editingService.name}
-                                    onChange={(e) =>
-                                      setEditingService({
-                                        ...editingService,
-                                        name: e.target.value,
-                                      })
-                                    }
-                                    className="bg-white/5 border-white/10 text-white"
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <label className="text-sm font-medium text-white">
-                                    Department
-                                  </label>
-                                  <Select
-                                    value={editingService.departmentId.toString()}
-                                    onValueChange={(value) =>
-                                      setEditingService({
-                                        ...editingService,
-                                        departmentId: parseInt(value),
-                                      })
-                                    }
-                                  >
-                                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
-                                      {departments.map((department: any) => (
-                                        <SelectItem
-                                          key={department.id}
-                                          value={department.id.toString()}
-                                          className="text-white hover:bg-white/10"
-                                        >
-                                          {department.name}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </div>
-                              <div className="space-y-2">
-                                <label className="text-sm font-medium text-white">
-                                  Description
-                                </label>
-                                <Input
-                                  value={editingService.description}
-                                  onChange={(e) =>
-                                    setEditingService({
-                                      ...editingService,
-                                      description: e.target.value,
-                                    })
-                                  }
-                                  className="bg-white/5 border-white/10 text-white"
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <label className="text-sm font-medium text-white">
-                                  Contact Information
-                                </label>
-                                <Input
-                                  value={editingService.contacts}
-                                  onChange={(e) =>
-                                    setEditingService({
-                                      ...editingService,
-                                      contacts: e.target.value,
-                                    })
-                                  }
-                                  className="bg-white/5 border-white/10 text-white"
-                                />
-                              </div>
-                              <div className="flex gap-2">
-                                <Button
-                                  onClick={updateService}
-                                  size="sm"
-                                  className="bg-white/10 hover:bg-white/20 text-white"
-                                >
-                                  Save Changes
-                                </Button>
-                                <Button
-                                  onClick={cancelEdit}
-                                  variant="outline"
-                                  size="sm"
-                                  className="bg-white/5 hover:bg-white/10 border-white/20 text-white"
-                                >
-                                  Cancel
-                                </Button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-start justify-between">
-                              <div className="space-y-3 flex-1">
-                                <div className="flex items-center gap-3">
-                                  <h3 className="text-xl font-semibold text-white">
-                                    {service.name}
-                                  </h3>
-                                  <Badge
-                                    variant="secondary"
-                                    className="text-xs bg-white/10 text-white border-white/20"
-                                  >
-                                    {service.department?.name}
-                                  </Badge>
-                                </div>
-                                <p className="text-gray-400 leading-relaxed">
-                                  {service.description}
-                                </p>
-                                <div className="flex items-center gap-2 text-sm text-gray-400">
-                                  <Contact className="w-4 h-4" />
-                                  <span>{service.contacts}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Badge
-                                    variant="outline"
-                                    className="text-xs bg-white/10 text-white border-white/20"
-                                  >
-                                    {service.commonIssues?.length || 0} common
-                                    issues
-                                  </Badge>
-                                </div>
-                              </div>
-                              <div className="flex gap-2 ml-4">
-                                <Button
-                                  onClick={() => startEdit(service)}
-                                  variant="outline"
-                                  size="sm"
-                                  className="gap-2 bg-white/5 hover:bg-white/10 border-white/20 text-white"
-                                >
-                                  <Edit3 className="w-4 h-4" />
-                                  Edit
-                                </Button>
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button
-                                      variant="destructive"
-                                      size="sm"
-                                      className="gap-2 bg-red-500/20 hover:bg-red-500/30 border-red-500/30 text-red-400"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                      Delete
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent className="bg-black/95 backdrop-blur-xl border-white/10">
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle className="text-white">
-                                        Delete Service
-                                      </AlertDialogTitle>
-                                      <AlertDialogDescription className="text-gray-400">
-                                        Are you sure you want to delete "
-                                        {service.name}"? This action cannot be
-                                        undone and will also remove all
-                                        associated common issues.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel className="bg-white/5 hover:bg-white/10 border-white/20 text-white">
-                                        Cancel
-                                      </AlertDialogCancel>
-                                      <AlertDialogAction
-                                        onClick={() =>
-                                          deleteService(service.id)
-                                        }
-                                        className="bg-red-500/20 hover:bg-red-500/30 border-red-500/30 text-red-400"
-                                      >
-                                        Delete Service
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              </div>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
+                        <TableCell className="font-medium text-white">
+                          {service.name}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="secondary"
+                            className="bg-white/10 text-white border-white/20"
+                          >
+                            {service.department?.name}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-gray-400 max-w-xs truncate">
+                          {service.description}
+                        </TableCell>
+                        <TableCell className="text-gray-400">
+                          <div className="flex items-center gap-2">
+                            <Contact className="w-4 h-4" />
+                            <span className="truncate max-w-[150px]">
+                              {service.contacts}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className="bg-white/10 text-white border-white/20"
+                          >
+                            {service.commonIssues?.length || 0} issues
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              onClick={() => openEditDialog(service)}
+                              variant="outline"
+                              size="sm"
+                              className="gap-2 bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              onClick={() => openDeleteDialog(service)}
+                              variant="destructive"
+                              size="sm"
+                              className="gap-2 bg-red-500/20 hover:bg-red-500/30 border-red-500/30 text-red-400"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {services.length > 0 && totalPages > 1 && (
+              <div className="mt-4">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() =>
+                          setCurrentPage(Math.max(1, currentPage - 1))
+                        }
+                        className={`cursor-pointer bg-white/5 hover:bg-white/10 border-white/20 text-white ${
+                          currentPage === 1
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}
+                      />
+                    </PaginationItem>
+
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (page) => (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            onClick={() => setCurrentPage(page)}
+                            isActive={currentPage === page}
+                            className={`cursor-pointer ${
+                              currentPage === page
+                                ? "bg-white/20 text-white"
+                                : "bg-white/5 hover:bg-white/10 text-gray-400"
+                            } border-white/20`}
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      )
+                    )}
+
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() =>
+                          setCurrentPage(Math.min(totalPages, currentPage + 1))
+                        }
+                        className={`cursor-pointer bg-white/5 hover:bg-white/10 border-white/20 text-white ${
+                          currentPage === totalPages
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Edit Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="bg-black/95 backdrop-blur-xl border-white/10 max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-white">Edit Service</DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Update the service information.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="edit-name"
+                    className="text-sm font-medium text-white"
+                  >
+                    Service Name
+                  </Label>
+                  <Input
+                    id="edit-name"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    className="bg-white/5 border-white/10 text-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="edit-department"
+                    className="text-sm font-medium text-white"
+                  >
+                    Department
+                  </Label>
+                  <Select
+                    value={formData.departmentId}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, departmentId: value })
+                    }
+                  >
+                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
+                      {departments.map((department: any) => (
+                        <SelectItem
+                          key={department.id}
+                          value={department.id.toString()}
+                          className="text-white hover:bg-white/10"
+                        >
+                          {department.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="edit-description"
+                  className="text-sm font-medium text-white"
+                >
+                  Description
+                </Label>
+                <Input
+                  id="edit-description"
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  className="bg-white/5 border-white/10 text-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="edit-contacts"
+                  className="text-sm font-medium text-white"
+                >
+                  Contact Information
+                </Label>
+                <Input
+                  id="edit-contacts"
+                  value={formData.contacts}
+                  onChange={(e) =>
+                    setFormData({ ...formData, contacts: e.target.value })
+                  }
+                  className="bg-white/5 border-white/10 text-white"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={handleEditDialogClose}
+                className="bg-white/5 hover:bg-white/10 border-white/20 text-white"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={updateService}
+                className="bg-white/10 hover:bg-white/20 text-white"
+              >
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Alert Dialog */}
+        <AlertDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+        >
+          <AlertDialogContent className="bg-black/95 backdrop-blur-xl border-white/10">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-white">
+                Delete Service
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-gray-400">
+                Are you sure you want to delete "{selectedService?.name}"? This
+                action cannot be undone and will also remove all associated
+                common issues.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="bg-white/5 hover:bg-white/10 border-white/20 text-white">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={deleteService}
+                className="bg-red-500/20 hover:bg-red-500/30 border-red-500/30 text-red-400"
+              >
+                Delete Service
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </Layout>
   );

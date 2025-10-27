@@ -19,7 +19,23 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -36,9 +52,17 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, Edit3, Trash2, Settings, List, AlertCircle } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { Plus, Trash2, AlertCircle, Edit2 } from "lucide-react";
 
 interface CommonIssue {
   id: number;
@@ -55,20 +79,26 @@ function Issues() {
   const [services, setServices] = useState<any[]>([]);
   const [company, setCompany] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingIssue, setEditingIssue] = useState<CommonIssue | null>(null);
-  const [newIssue, setNewIssue] = useState({
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedIssue, setSelectedIssue] = useState<CommonIssue | null>(null);
+  const [formData, setFormData] = useState({
     name: "",
     description: "",
     solutions: "",
     serviceId: "",
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [, setTotalItems] = useState(0);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     if (user?.id) {
       loadAllData();
     }
-  }, [user]);
+  }, [user, currentPage]);
 
   const loadAllData = async () => {
     if (!user?.id) return;
@@ -87,7 +117,7 @@ function Issues() {
       setCompany(companyData);
 
       // Step 2: Get departments
-      const depts = await departmentsAPI.getByCompany(companyData.id);
+      const depts = await departmentsAPI.getByCompany(user?.id);
 
       if (depts.length === 0) {
         setLoading(false);
@@ -102,15 +132,26 @@ function Issues() {
       const allServices = servicesArrays.flat();
       setServices(allServices);
 
-      // Step 4: Get all issues in parallel
-      if (allServices.length > 0) {
-        const issuePromises = allServices.map((service: any) =>
-          commonIssuesAPI.getByService(service.id)
-        );
-        const issuesArrays = await Promise.all(issuePromises);
-        const allIssues = issuesArrays.flat();
-        setIssues(allIssues);
+      if (allServices.length === 0) {
+        setLoading(false);
+        return;
       }
+
+      // Step 4: Get all issues with pagination
+      const issuePromises = allServices.map((service: any) =>
+        commonIssuesAPI.getByService(service.id)
+      );
+      const issuesArrays = await Promise.all(issuePromises);
+      const allIssues = issuesArrays.flat();
+
+      // Calculate pagination on the aggregated results
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedIssues = allIssues.slice(startIndex, endIndex);
+
+      setIssues(paginatedIssues);
+      setTotalItems(allIssues.length);
+      setTotalPages(Math.ceil(allIssues.length / itemsPerPage));
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {
@@ -122,19 +163,20 @@ function Issues() {
     try {
       let solutionsData;
       try {
-        solutionsData = JSON.parse(newIssue.solutions);
+        solutionsData = JSON.parse(formData.solutions);
       } catch {
-        solutionsData = { description: newIssue.solutions };
+        solutionsData = { description: formData.solutions };
       }
 
       await commonIssuesAPI.create({
-        name: newIssue.name,
-        description: newIssue.description,
+        name: formData.name,
+        description: formData.description,
         solutions: solutionsData,
-        serviceId: parseInt(newIssue.serviceId),
+        serviceId: parseInt(formData.serviceId),
       });
-      setNewIssue({ name: "", description: "", solutions: "", serviceId: "" });
-      setShowCreateForm(false);
+      setFormData({ name: "", description: "", solutions: "", serviceId: "" });
+      setIsAddDialogOpen(false);
+      setCurrentPage(1);
       loadAllData();
     } catch (error) {
       console.error("Error creating issue:", error);
@@ -142,55 +184,79 @@ function Issues() {
   };
 
   const updateIssue = async () => {
-    if (!editingIssue) return;
+    if (!selectedIssue) return;
 
     try {
       let solutionsData;
       try {
         solutionsData =
-          typeof editingIssue.solutions === "string"
-            ? JSON.parse(editingIssue.solutions)
-            : editingIssue.solutions;
+          typeof formData.solutions === "string"
+            ? JSON.parse(formData.solutions)
+            : formData.solutions;
       } catch {
-        solutionsData = { description: editingIssue.solutions };
+        solutionsData = { description: formData.solutions };
       }
 
-      await commonIssuesAPI.update(editingIssue.id, {
-        name: editingIssue.name,
-        description: editingIssue.description,
+      await commonIssuesAPI.update(selectedIssue.id, {
+        name: formData.name,
+        description: formData.description,
         solutions: solutionsData,
-        serviceId: editingIssue.serviceId,
+        serviceId: parseInt(formData.serviceId),
       });
-      setEditingIssue(null);
+      setIsEditDialogOpen(false);
+      setSelectedIssue(null);
+      setFormData({ name: "", description: "", solutions: "", serviceId: "" });
       loadAllData();
     } catch (error) {
       console.error("Error updating issue:", error);
     }
   };
 
-  const deleteIssue = async (id: number) => {
-    if (confirm("Are you sure you want to delete this issue?")) {
-      try {
-        await commonIssuesAPI.delete(id);
-        loadAllData();
-      } catch (error) {
-        console.error("Error deleting issue:", error);
+  const deleteIssue = async () => {
+    if (!selectedIssue) return;
+
+    try {
+      await commonIssuesAPI.delete(selectedIssue.id);
+      setIsDeleteDialogOpen(false);
+      setSelectedIssue(null);
+      // If current page becomes empty after deletion, go to previous page
+      if (issues.length === 1 && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
       }
+      loadAllData();
+    } catch (error) {
+      console.error("Error deleting issue:", error);
     }
   };
 
-  const startEdit = (issue: CommonIssue) => {
-    setEditingIssue({
-      ...issue,
+  const openEditDialog = (issue: CommonIssue) => {
+    setSelectedIssue(issue);
+    setFormData({
+      name: issue.name,
+      description: issue.description,
       solutions:
         typeof issue.solutions === "object"
           ? JSON.stringify(issue.solutions, null, 2)
           : issue.solutions,
+      serviceId: issue.serviceId.toString(),
     });
+    setIsEditDialogOpen(true);
   };
 
-  const cancelEdit = () => {
-    setEditingIssue(null);
+  const openDeleteDialog = (issue: CommonIssue) => {
+    setSelectedIssue(issue);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleAddDialogClose = () => {
+    setIsAddDialogOpen(false);
+    setFormData({ name: "", description: "", solutions: "", serviceId: "" });
+  };
+
+  const handleEditDialogClose = () => {
+    setIsEditDialogOpen(false);
+    setSelectedIssue(null);
+    setFormData({ name: "", description: "", solutions: "", serviceId: "" });
   };
 
   if (!user || loading) {
@@ -267,448 +333,416 @@ function Issues() {
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-white">
-            Common Issues
-          </h1>
-          <p className="text-gray-400">
-            Manage {company.name}'s frequently encountered problems and their
-            solutions
-          </p>
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight text-white">
+              Common Issues
+            </h1>
+            <p className="text-gray-400">
+              Manage {company.name}'s frequently encountered problems and their
+              solutions
+            </p>
+          </div>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2 bg-white/10 hover:bg-white/20 border-white/20 text-white">
+                <Plus className="w-4 h-4" />
+                Add Issue
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-black/95 backdrop-blur-xl border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-white">
+                  Add New Common Issue
+                </DialogTitle>
+                <DialogDescription className="text-gray-400">
+                  Create a new common issue and its solutions.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="add-name"
+                      className="text-sm font-medium text-white"
+                    >
+                      Issue Name
+                    </Label>
+                    <Input
+                      id="add-name"
+                      placeholder="e.g. Login Problems, Payment Failed"
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="add-service"
+                      className="text-sm font-medium text-white"
+                    >
+                      Service
+                    </Label>
+                    <Select
+                      value={formData.serviceId}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, serviceId: value })
+                      }
+                    >
+                      <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                        <SelectValue placeholder="Select service" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
+                        {services.map((service: any) => (
+                          <SelectItem
+                            key={service.id}
+                            value={service.id.toString()}
+                            className="text-white hover:bg-white/10"
+                          >
+                            {service.name} ({service.department?.name})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="add-description"
+                    className="text-sm font-medium text-white"
+                  >
+                    Description
+                  </Label>
+                  <Input
+                    id="add-description"
+                    placeholder="Describe the common issue"
+                    value={formData.description}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
+                    className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="add-solutions"
+                    className="text-sm font-medium text-white"
+                  >
+                    Solutions
+                  </Label>
+                  <Textarea
+                    id="add-solutions"
+                    placeholder="Provide solutions (JSON format or plain text)"
+                    value={formData.solutions}
+                    onChange={(e) =>
+                      setFormData({ ...formData, solutions: e.target.value })
+                    }
+                    className="min-h-[120px] bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={handleAddDialogClose}
+                  className="bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={createIssue}
+                  className="bg-white/10 hover:bg-white/20 text-white"
+                >
+                  Create Issue
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 bg-white/5 backdrop-blur-xl border border-white/10">
-            <TabsTrigger
-              value="overview"
-              className="flex items-center gap-2 data-[state=active]:bg-white/10 text-gray-400 data-[state=active]:text-white"
-            >
-              <List className="w-4 h-4" />
-              Issue Overview
-            </TabsTrigger>
-            <TabsTrigger
-              value="manage"
-              className="flex items-center gap-2 data-[state=active]:bg-white/10 text-gray-400 data-[state=active]:text-white"
-            >
-              <Settings className="w-4 h-4" />
-              Manage Issues
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="space-y-6">
-            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-              <CardHeader>
-                <CardTitle className="text-white">Issue Overview</CardTitle>
-                <CardDescription className="text-gray-400">
-                  View all common issues and their solutions across your
-                  services
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {issues.length === 0 ? (
-                  <div className="text-center py-12 border-2 border-dashed border-white/10 rounded-lg">
-                    <div className="space-y-3">
-                      <h3 className="text-lg font-medium text-gray-400">
-                        No Common Issues Found
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        Create your first common issue to help streamline
-                        customer support.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="grid gap-4">
-                    {issues.map((issue: CommonIssue) => (
-                      <Card
-                        key={issue.id}
-                        className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all duration-300"
-                      >
-                        <CardContent className="pt-6">
-                          <div className="space-y-4">
-                            <div className="flex items-start justify-between">
-                              <div className="space-y-2 flex-1">
-                                <div className="flex items-center gap-3">
-                                  <AlertCircle className="w-5 h-5 text-orange-500" />
-                                  <h3 className="text-xl font-semibold text-white">
-                                    {issue.name}
-                                  </h3>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Badge
-                                    variant="secondary"
-                                    className="text-xs bg-white/10 text-white border-white/20"
-                                  >
-                                    {issue.service?.name}
-                                  </Badge>
-                                  <Badge
-                                    variant="outline"
-                                    className="text-xs bg-white/10 text-white border-white/20"
-                                  >
-                                    {issue.service?.department?.name}
-                                  </Badge>
-                                </div>
-                              </div>
-                            </div>
-                            <p className="text-gray-400 leading-relaxed">
-                              {issue.description}
-                            </p>
-                            <div className="space-y-2">
-                              <h4 className="text-sm font-medium text-gray-400">
-                                Solutions:
-                              </h4>
-                              <div className="bg-white/5 backdrop-blur-sm p-4 rounded-lg border border-white/10">
-                                <pre className="text-sm whitespace-pre-wrap text-white">
-                                  {typeof issue.solutions === "object"
-                                    ? JSON.stringify(issue.solutions, null, 2)
-                                    : issue.solutions}
-                                </pre>
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="manage" className="space-y-6">
-            <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <div>
-                  <CardTitle className="text-white">
-                    Manage Common Issues
-                  </CardTitle>
-                  <CardDescription className="text-gray-400">
-                    Create, edit, and delete common issues and their solutions
-                  </CardDescription>
+        <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+          <CardHeader>
+            <CardTitle className="text-white">All Common Issues</CardTitle>
+            <CardDescription className="text-gray-400">
+              View and manage all common issues and their solutions across your
+              services
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {issues.length === 0 ? (
+              <div className="text-center py-12 border-2 border-dashed border-white/10 rounded-lg">
+                <div className="space-y-3">
+                  <h3 className="text-lg font-medium text-gray-400">
+                    No Common Issues Found
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    Create your first common issue to help streamline customer
+                    support.
+                  </p>
                 </div>
-                <Button
-                  onClick={() => setShowCreateForm(!showCreateForm)}
-                  variant={showCreateForm ? "outline" : "default"}
-                  size="sm"
-                  className="gap-2 bg-white/10 hover:bg-white/20 border-white/20 text-white"
-                >
-                  {showCreateForm ? (
-                    "Cancel"
-                  ) : (
-                    <>
-                      <Plus className="w-4 h-4" />
-                      New Issue
-                    </>
-                  )}
-                </Button>
-              </CardHeader>
-
-              <CardContent className="space-y-6">
-                {showCreateForm && (
-                  <div className="space-y-6 p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-white">
-                          Issue Name
-                        </label>
-                        <Input
-                          placeholder="e.g. Login Problems, Payment Failed"
-                          value={newIssue.name}
-                          onChange={(e) =>
-                            setNewIssue({ ...newIssue, name: e.target.value })
-                          }
-                          className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-white">
-                          Service
-                        </label>
-                        <Select
-                          value={newIssue.serviceId}
-                          onValueChange={(value) =>
-                            setNewIssue({ ...newIssue, serviceId: value })
-                          }
-                        >
-                          <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                            <SelectValue placeholder="Select service" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
-                            {services.map((service: any) => (
-                              <SelectItem
-                                key={service.id}
-                                value={service.id.toString()}
-                                className="text-white hover:bg-white/10"
-                              >
-                                {service.name} ({service.department?.name})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-white">
+              </div>
+            ) : (
+              <div className="rounded-md border border-white/10">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-white/10 hover:bg-white/5">
+                      <TableHead className="text-gray-400">Issue</TableHead>
+                      <TableHead className="text-gray-400">Service</TableHead>
+                      <TableHead className="text-gray-400">
                         Description
-                      </label>
-                      <Input
-                        placeholder="Describe the common issue"
-                        value={newIssue.description}
-                        onChange={(e) =>
-                          setNewIssue({
-                            ...newIssue,
-                            description: e.target.value,
-                          })
-                        }
-                        className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-white">
-                        Solutions
-                      </label>
-                      <Textarea
-                        placeholder="Provide solutions (JSON format or plain text)"
-                        value={newIssue.solutions}
-                        onChange={(e) =>
-                          setNewIssue({
-                            ...newIssue,
-                            solutions: e.target.value,
-                          })
-                        }
-                        className="min-h-[100px] bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-                      />
-                    </div>
-                    <Button
-                      onClick={createIssue}
-                      className="gap-2 bg-white/10 hover:bg-white/20 text-white"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Create Issue
-                    </Button>
-                  </div>
-                )}
-
-                {issues.length === 0 ? (
-                  <div className="text-center py-12 border-2 border-dashed border-white/10 rounded-lg">
-                    <div className="space-y-3">
-                      <h3 className="text-lg font-medium text-gray-400">
-                        No Common Issues Found
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        Create your first common issue to get started.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="grid gap-4">
-                    {issues.map((issue: CommonIssue) => (
-                      <Card
+                      </TableHead>
+                      <TableHead className="text-right text-gray-400">
+                        Actions
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {issues.map((issue) => (
+                      <TableRow
                         key={issue.id}
-                        className="bg-white/5 backdrop-blur-sm border-white/10"
+                        className="border-white/10 hover:bg-white/5"
                       >
-                        <CardContent className="pt-6">
-                          {editingIssue && editingIssue.id === issue.id ? (
-                            <div className="space-y-4">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                  <label className="text-sm font-medium text-white">
-                                    Issue Name
-                                  </label>
-                                  <Input
-                                    value={editingIssue.name}
-                                    onChange={(e) =>
-                                      setEditingIssue({
-                                        ...editingIssue,
-                                        name: e.target.value,
-                                      })
-                                    }
-                                    className="bg-white/5 border-white/10 text-white"
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <label className="text-sm font-medium text-white">
-                                    Service
-                                  </label>
-                                  <Select
-                                    value={editingIssue.serviceId.toString()}
-                                    onValueChange={(value) =>
-                                      setEditingIssue({
-                                        ...editingIssue,
-                                        serviceId: parseInt(value),
-                                      })
-                                    }
-                                  >
-                                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
-                                      {services.map((service: any) => (
-                                        <SelectItem
-                                          key={service.id}
-                                          value={service.id.toString()}
-                                          className="text-white hover:bg-white/10"
-                                        >
-                                          {service.name} (
-                                          {service.department?.name})
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </div>
-                              <div className="space-y-2">
-                                <label className="text-sm font-medium text-white">
-                                  Description
-                                </label>
-                                <Input
-                                  value={editingIssue.description}
-                                  onChange={(e) =>
-                                    setEditingIssue({
-                                      ...editingIssue,
-                                      description: e.target.value,
-                                    })
-                                  }
-                                  className="bg-white/5 border-white/10 text-white"
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <label className="text-sm font-medium text-white">
-                                  Solutions
-                                </label>
-                                <Textarea
-                                  value={editingIssue.solutions as string}
-                                  onChange={(e) =>
-                                    setEditingIssue({
-                                      ...editingIssue,
-                                      solutions: e.target.value,
-                                    })
-                                  }
-                                  className="min-h-[100px] bg-white/5 border-white/10 text-white"
-                                />
-                              </div>
-                              <div className="flex gap-2">
-                                <Button
-                                  onClick={updateIssue}
-                                  size="sm"
-                                  className="bg-white/10 hover:bg-white/20 text-white"
-                                >
-                                  Save Changes
-                                </Button>
-                                <Button
-                                  onClick={cancelEdit}
-                                  variant="outline"
-                                  size="sm"
-                                  className="bg-white/5 hover:bg-white/10 border-white/20 text-white"
-                                >
-                                  Cancel
-                                </Button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-start justify-between">
-                              <div className="space-y-4 flex-1">
-                                <div className="space-y-2">
-                                  <div className="flex items-center gap-3">
-                                    <AlertCircle className="w-5 h-5 text-orange-500" />
-                                    <h3 className="text-xl font-semibold text-white">
-                                      {issue.name}
-                                    </h3>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <Badge
-                                      variant="secondary"
-                                      className="text-xs bg-white/10 text-white border-white/20"
-                                    >
-                                      {issue.service?.name}
-                                    </Badge>
-                                    <Badge
-                                      variant="outline"
-                                      className="text-xs bg-white/10 text-white border-white/20"
-                                    >
-                                      {issue.service?.department?.name}
-                                    </Badge>
-                                  </div>
-                                </div>
-                                <p className="text-gray-400 leading-relaxed">
-                                  {issue.description}
-                                </p>
-                                <div className="space-y-2">
-                                  <h4 className="text-sm font-medium text-gray-400">
-                                    Solutions:
-                                  </h4>
-                                  <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-4 rounded-lg max-h-[150px] overflow-auto">
-                                    <pre className="text-sm whitespace-pre-wrap text-white">
-                                      {typeof issue.solutions === "object"
-                                        ? JSON.stringify(
-                                            issue.solutions,
-                                            null,
-                                            2
-                                          )
-                                        : issue.solutions}
-                                    </pre>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex gap-2 ml-4">
-                                <Button
-                                  onClick={() => startEdit(issue)}
-                                  variant="outline"
-                                  size="sm"
-                                  className="gap-2 bg-white/5 hover:bg-white/10 border-white/20 text-white"
-                                >
-                                  <Edit3 className="w-4 h-4" />
-                                  Edit
-                                </Button>
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button
-                                      variant="destructive"
-                                      size="sm"
-                                      className="gap-2 bg-red-500/20 hover:bg-red-500/30 border-red-500/30 text-red-400"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                      Delete
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent className="bg-black/95 backdrop-blur-xl border-white/10">
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle className="text-white">
-                                        Delete Common Issue
-                                      </AlertDialogTitle>
-                                      <AlertDialogDescription className="text-gray-400">
-                                        Are you sure you want to delete "
-                                        {issue.name}"? This action cannot be
-                                        undone and will remove the issue and all
-                                        its solutions.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel className="bg-white/5 hover:bg-white/10 border-white/20 text-white">
-                                        Cancel
-                                      </AlertDialogCancel>
-                                      <AlertDialogAction
-                                        onClick={() => deleteIssue(issue.id)}
-                                        className="bg-red-500/20 hover:bg-red-500/30 border-red-500/30 text-red-400"
-                                      >
-                                        Delete Issue
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              </div>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
+                        <TableCell className="font-medium text-white">
+                          <div className="flex items-center gap-2">
+                            <AlertCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                            <span>{issue.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="secondary"
+                            className="bg-white/10 text-white border-white/20"
+                          >
+                            {issue.service?.name}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-gray-400 max-w-xs truncate">
+                          {issue.description}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              onClick={() => openEditDialog(issue)}
+                              variant="outline"
+                              size="sm"
+                              className="gap-2 bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              onClick={() => openDeleteDialog(issue)}
+                              variant="destructive"
+                              size="sm"
+                              className="gap-2 bg-red-500/20 hover:bg-red-500/30 border-red-500/30 text-red-400"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {issues.length > 0 && totalPages > 1 && (
+              <div className="mt-4">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() =>
+                          setCurrentPage(Math.max(1, currentPage - 1))
+                        }
+                        className={`cursor-pointer bg-white/5 hover:bg-white/10 border-white/20 text-white ${
+                          currentPage === 1
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}
+                      />
+                    </PaginationItem>
+
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (page) => (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            onClick={() => setCurrentPage(page)}
+                            isActive={currentPage === page}
+                            className={`cursor-pointer ${
+                              currentPage === page
+                                ? "bg-white/20 text-white"
+                                : "bg-white/5 hover:bg-white/10 text-gray-400"
+                            } border-white/20`}
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      )
+                    )}
+
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() =>
+                          setCurrentPage(Math.min(totalPages, currentPage + 1))
+                        }
+                        className={`cursor-pointer bg-white/5 hover:bg-white/10 border-white/20 text-white ${
+                          currentPage === totalPages
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Edit Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="bg-black/95 backdrop-blur-xl border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-white">
+                Edit Common Issue
+              </DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Update the issue information and solutions.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="edit-name"
+                    className="text-sm font-medium text-white"
+                  >
+                    Issue Name
+                  </Label>
+                  <Input
+                    id="edit-name"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    className="bg-white/5 border-white/10 text-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="edit-service"
+                    className="text-sm font-medium text-white"
+                  >
+                    Service
+                  </Label>
+                  <Select
+                    value={formData.serviceId}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, serviceId: value })
+                    }
+                  >
+                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
+                      {services.map((service: any) => (
+                        <SelectItem
+                          key={service.id}
+                          value={service.id.toString()}
+                          className="text-white hover:bg-white/10"
+                        >
+                          {service.name} ({service.department?.name})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="edit-description"
+                  className="text-sm font-medium text-white"
+                >
+                  Description
+                </Label>
+                <Input
+                  id="edit-description"
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  className="bg-white/5 border-white/10 text-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="edit-solutions"
+                  className="text-sm font-medium text-white"
+                >
+                  Solutions
+                </Label>
+                <Textarea
+                  id="edit-solutions"
+                  value={formData.solutions}
+                  onChange={(e) =>
+                    setFormData({ ...formData, solutions: e.target.value })
+                  }
+                  className="min-h-[120px] bg-white/5 border-white/10 text-white"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={handleEditDialogClose}
+                className="bg-white/5 hover:bg-white/10 border-white/20 text-white"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={updateIssue}
+                className="bg-white/10 hover:bg-white/20 text-white"
+              >
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Alert Dialog */}
+        <AlertDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+        >
+          <AlertDialogContent className="bg-black/95 backdrop-blur-xl border-white/10">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-white">
+                Delete Common Issue
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-gray-400">
+                Are you sure you want to delete "{selectedIssue?.name}"? This
+                action cannot be undone and will remove the issue and all its
+                solutions.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="bg-white/5 hover:bg-white/10 border-white/20 text-white">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={deleteIssue}
+                className="bg-red-500/20 hover:bg-red-500/30 border-red-500/30 text-red-400"
+              >
+                Delete Issue
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </Layout>
   );

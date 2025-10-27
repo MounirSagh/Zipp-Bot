@@ -75,7 +75,7 @@ function Dashboard() {
 
   return (
     <Layout>
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="max-w-7xl mx-auto space-y-8 bg-transparent">
         {/* Header */}
         <div className="flex items-center gap-3">
           <div>
