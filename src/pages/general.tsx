@@ -14,8 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Plus, Edit3, Users, User, Edit2 } from "lucide-react";
+import { Search, Plus, Users, Edit2 } from "lucide-react";
 
 function General() {
   const { user } = useUser();
