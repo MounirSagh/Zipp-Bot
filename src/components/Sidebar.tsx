@@ -79,14 +79,14 @@ function SidebarNavItem({
   );
 }
 
-// Sidebar component
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { state } = useSidebar();
   const { signOut } = useClerk();
   return (
-    <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="border-b border-white/10 bg-white/10 backdrop-blur-md text-white">
-        <div className="flex items-center justify-center gap-2 py-3">
+    <Sidebar collapsible="icon" {...props} className="">
+      <SidebarHeader className="border-b border-white/10 backdrop-blur-md text-white">
+        <div className="flex items-center justify-center py-1.5">
           <div
             className={cn(
               "transition-opacity duration-200",
@@ -98,14 +98,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 className="text-2xl font-bold text-white"
                 style={{ fontFamily: "'Major Mono Display', monospace" }}
               >
-                ZIPP
+                Zipp
               </h1>
             </div>
           </div>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="bg-white/5 backdrop-blur-md">
+      <SidebarContent className="backdrop-blur-3xl bg-gradient-to-b from- via-neutral-900 to-purple-950/15">
         <SidebarGroup>
           <SidebarGroupLabel className="text-gray-300">
             Main Navigation
@@ -119,11 +119,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="bg-white/10 backdrop-blur-md border-t border-white/10">
+      <SidebarFooter className=" backdrop-blur-md  border-white/10 bg-purple-950/15">
         <Button
           onClick={() => signOut()}
           variant="outline"
-          className="w-full text-white bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20"
+          className="w-full text-white backdrop-blur-sm border-white/20 hover:bg-white/20"
         >
           Logout
         </Button>

@@ -127,26 +127,26 @@
     @apply bg-transparent text-white;
   }
   html {
-    @apply bg-black;
+    @apply bg-neutral-900;
   }
 
-  /* Override sidebar backgrounds for glassmorphism */
+  /* Override sidebar backgrounds for glassmorphism
   [data-slot="sidebar"] {
     background: rgba(255, 255, 255, 0.05) !important;
     backdrop-filter: blur(16px) !important;
     -webkit-backdrop-filter: blur(16px) !important;
     border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-  }
+  } */
 
   /* Make sure main content area is transparent */
-  main {
+  /* main {
     background: transparent !important;
-  }
+  } */
 
   /* Ensure SidebarInset is transparent */
-  [data-slot="content"] {
+  /* [data-slot="content"] {
     background: transparent !important;
-  }
+  } */
 }
 
 @layer utilities {
@@ -168,22 +168,6 @@
     scroll-behavior: smooth;
   }
 
-  /* Custom scrollbar for dark theme */
-  ::-webkit-scrollbar {
-    width: 10px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.3);
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(
-      to bottom,
-      rgb(192, 132, 252),
-      rgb(244, 114, 182)
-    );
-  }
 
   /* Glassmorphic animations */
   @keyframes blob {

@@ -333,7 +333,7 @@ function Issues() {
 
   return (
     <Layout>
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="w-full space-y-6">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight text-white">
@@ -351,7 +351,7 @@ function Issues() {
                 Add Issue
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-black/95 backdrop-blur-xl border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="bg-neutral-900 backdrop-blur-xl border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="text-white">
                   Add New Common Issue
@@ -463,14 +463,7 @@ function Issues() {
           </Dialog>
         </div>
 
-        <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white">All Common Issues</CardTitle>
-            <CardDescription className="text-gray-400">
-              View and manage all common issues and their solutions across your
-              services
-            </CardDescription>
-          </CardHeader>
+        <div className="">
           <CardContent>
             {issues.length === 0 ? (
               <div className="text-center py-12 border-2 border-dashed border-white/10 rounded-lg">
@@ -485,7 +478,7 @@ function Issues() {
                 </div>
               </div>
             ) : (
-              <div className="rounded-md border border-white/10">
+              <div className="">
                 <Table>
                   <TableHeader>
                     <TableRow className="border-white/10 hover:bg-white/5">
@@ -602,11 +595,11 @@ function Issues() {
               </div>
             )}
           </CardContent>
-        </Card>
+        </div>
 
         {/* Edit Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="bg-black/95 backdrop-blur-xl border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="bg-neutral-900 backdrop-blur-xl border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-white">
                 Edit Common Issue
@@ -719,7 +712,7 @@ function Issues() {
           open={isDeleteDialogOpen}
           onOpenChange={setIsDeleteDialogOpen}
         >
-          <AlertDialogContent className="bg-black/95 backdrop-blur-xl border-white/10">
+          <AlertDialogContent className="bg-neutral-900 backdrop-blur-xl border-white/10">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-white">
                 Delete Common Issue

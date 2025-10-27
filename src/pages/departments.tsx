@@ -256,7 +256,7 @@ function Departments() {
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="w-full space-y-6">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight text-white">
@@ -273,7 +273,7 @@ function Departments() {
                 Add Department
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-black/95 backdrop-blur-xl border-white/10">
+            <DialogContent className="bg-neutral-900 backdrop-blur-xl border-white/10">
               <DialogHeader>
                 <DialogTitle className="text-white">
                   Add New Department
@@ -337,13 +337,7 @@ function Departments() {
           </Dialog>
         </div>
 
-        <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white">All Departments</CardTitle>
-            <CardDescription className="text-gray-400">
-              View and manage all departments in your organization
-            </CardDescription>
-          </CardHeader>
+        <div className="bg-transparent border-white/10">
           <CardContent>
             {departments.length === 0 ? (
               <div className="text-center py-12 border-2 border-dashed border-white/10 rounded-lg">
@@ -358,65 +352,61 @@ function Departments() {
                 </div>
               </div>
             ) : (
-              <div className="rounded-md border border-white/10">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-white/10 hover:bg-white/5">
-                      <TableHead className="text-gray-400">Name</TableHead>
-                      <TableHead className="text-gray-400">
-                        Description
-                      </TableHead>
-                      <TableHead className="text-gray-400">Services</TableHead>
-                      <TableHead className="text-right text-gray-400">
-                        Actions
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {departments.map((department) => (
-                      <TableRow
-                        key={department.id}
-                        className="border-white/10 hover:bg-white/5"
-                      >
-                        <TableCell className="font-medium text-white">
-                          {department.name}
-                        </TableCell>
-                        <TableCell className="text-gray-400">
-                          {department.description}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="secondary"
-                            className="bg-white/10 text-white border-white/20"
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-white/10 hover:bg-white/5">
+                    <TableHead className="text-gray-400">Name</TableHead>
+                    <TableHead className="text-gray-400">Description</TableHead>
+                    <TableHead className="text-gray-400">Services</TableHead>
+                    <TableHead className="text-right text-gray-400">
+                      Actions
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {departments.map((department) => (
+                    <TableRow
+                      key={department.id}
+                      className="border-white/10 hover:bg-white/5"
+                    >
+                      <TableCell className="font-medium text-white">
+                        {department.name}
+                      </TableCell>
+                      <TableCell className="text-gray-400">
+                        {department.description}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="secondary"
+                          className="bg-white/10 text-white border-white/20"
+                        >
+                          {department.services?.length || 0} services
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            onClick={() => openEditDialog(department)}
+                            variant="outline"
+                            size="sm"
+                            className="gap-2 bg-white/5 hover:bg-white/10 border-white/20 text-white"
                           >
-                            {department.services?.length || 0} services
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              onClick={() => openEditDialog(department)}
-                              variant="outline"
-                              size="sm"
-                              className="gap-2 bg-white/5 hover:bg-white/10 border-white/20 text-white"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              onClick={() => openDeleteDialog(department)}
-                              variant="destructive"
-                              size="sm"
-                              className="gap-2 bg-red-500/20 hover:bg-red-500/30 border-red-500/30 text-red-400"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            onClick={() => openDeleteDialog(department)}
+                            variant="destructive"
+                            size="sm"
+                            className="gap-2 bg-red-500/20 hover:bg-red-500/30 border-red-500/30 text-red-400"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             )}
 
             {/* Pagination */}
@@ -472,11 +462,11 @@ function Departments() {
               </div>
             )}
           </CardContent>
-        </Card>
+        </div>
 
         {/* Edit Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="bg-black/95 backdrop-blur-xl border-white/10">
+          <DialogContent className="bg-neutral-900 backdrop-blur-xl border-white/10">
             <DialogHeader>
               <DialogTitle className="text-white">Edit Department</DialogTitle>
               <DialogDescription className="text-gray-400">
@@ -540,7 +530,7 @@ function Departments() {
           open={isDeleteDialogOpen}
           onOpenChange={setIsDeleteDialogOpen}
         >
-          <AlertDialogContent className="bg-black/95 backdrop-blur-xl border-white/10">
+          <AlertDialogContent className="bg-neutral-900 backdrop-blur-xl border-white/10">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-white">
                 Delete Department
