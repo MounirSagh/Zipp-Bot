@@ -1,197 +1,161 @@
-// const API_BASE_URL = "https://aivo-backend.vercel.app/api";
+const GATEWAY_URL = "http://localhost:5001/gateway";
 
-const API_BASE_URL = "http://localhost:3000/api";
+const gatewayRequest = async (
+  method: string,
+  url: string,
+  companyId: string,
+  data?: any
+) => {
+  const response = await fetch(GATEWAY_URL, {
+    method: "POST",
+    credentials: 'include',
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      companyId,
+      method,
+      url,
+      data,
+    }),
+  });
+  return response.json();
+};
+
 // Company API calls
 export const companyAPI = {
-  create: async (data: any) => {
-    const response = await fetch(`${API_BASE_URL}/companies`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+  create: async (companyId: string, data: any) => {
+    return gatewayRequest("POST", "companies", companyId, data);
   },
 
-  getAll: async () => {
-    const response = await fetch(`${API_BASE_URL}/companies`);
-    return response.json();
+  getAll: async (companyId: string) => {
+    return gatewayRequest("GET", "companies", companyId);
   },
 
   getByCompanyId: async (companyId: string) => {
-    const response = await fetch(`${API_BASE_URL}/companies/${companyId}`);
-    return response.json();
+    return gatewayRequest("GET", `companies/${companyId}`, companyId);
   },
 
-  update: async (id: number, data: any) => {
-    const response = await fetch(`${API_BASE_URL}/companies/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+  update: async (companyId: string, id: number, data: any) => {
+    return gatewayRequest("PUT", `companies/${id}`, companyId, data);
   },
 
-  delete: async (id: number) => {
-    const response = await fetch(`${API_BASE_URL}/companies/${id}`, {
-      method: "DELETE",
-    });
-    return response.json();
+  delete: async (companyId: string, id: number) => {
+    return gatewayRequest("DELETE", `companies/${id}`, companyId);
   },
 };
 
 // Departments API calls
 export const departmentsAPI = {
-  create: async (data: any) => {
-    const response = await fetch(`${API_BASE_URL}/departments`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+  create: async (companyId: string, data: any) => {
+    return gatewayRequest("POST", "departments", companyId, data);
   },
 
-  getAll: async () => {
-    const response = await fetch(`${API_BASE_URL}/departments`);
-    return response.json();
+  getAll: async (companyId: string) => {
+    return gatewayRequest("GET", "departments", companyId);
   },
 
-  getById: async (id: number) => {
-    const response = await fetch(`${API_BASE_URL}/departments/${id}`);
-    return response.json();
+  getById: async (companyId: string, id: number) => {
+    return gatewayRequest("GET", `departments/${id}`, companyId);
   },
 
-  getByCompany: async (companyId: string, page?: number, limit?: number) => {
-    let url = `${API_BASE_URL}/departments/company/${companyId}`;
-    if (page !== undefined && limit !== undefined) {
-      url += `?page=${page}&limit=${limit}`;
-    }
-    const response = await fetch(url);
-    return response.json();
+  getByCompany: async (
+    companyId: string,
+    page?: number,
+    limit?: number
+  ) => {
+    const params = new URLSearchParams();
+    if (page !== undefined) params.append("page", page.toString());
+    if (limit !== undefined) params.append("limit", limit.toString());
+    const queryString = params.toString();
+    const url = `departments/company/${companyId}${queryString ? `?${queryString}` : ""}`;
+    return gatewayRequest("GET", url, companyId);
   },
 
-  update: async (id: number, data: any) => {
-    const response = await fetch(`${API_BASE_URL}/departments/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+  update: async (companyId: string, id: number, data: any) => {
+    return gatewayRequest("PUT", `departments/${id}`, companyId, data);
   },
 
-  delete: async (id: number) => {
-    const response = await fetch(`${API_BASE_URL}/departments/${id}`, {
-      method: "DELETE",
-    });
-    return response.json();
+  delete: async (companyId: string, id: number) => {
+    return gatewayRequest("DELETE", `departments/${id}`, companyId);
   },
 };
 
 // Services API calls
 export const servicesAPI = {
-  create: async (data: any) => {
-    const response = await fetch(`${API_BASE_URL}/services`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+  create: async (companyId: string, data: any) => {
+    return gatewayRequest("POST", "services", companyId, data);
   },
 
-  getAll: async () => {
-    const response = await fetch(`${API_BASE_URL}/services`);
-    return response.json();
+  getAll: async (companyId: string) => {
+    return gatewayRequest("GET", "services", companyId);
   },
 
-  getById: async (id: number) => {
-    const response = await fetch(`${API_BASE_URL}/services/${id}`);
-    return response.json();
+  getById: async (companyId: string, id: number) => {
+    return gatewayRequest("GET", `services/${id}`, companyId);
   },
 
   getByDepartment: async (
+    companyId: string,
     departmentId: number,
     page?: number,
     limit?: number
   ) => {
-    let url = `${API_BASE_URL}/services/department/${departmentId}`;
-    if (page !== undefined && limit !== undefined) {
-      url += `?page=${page}&limit=${limit}`;
-    }
-    const response = await fetch(url);
-    return response.json();
+    const params = new URLSearchParams();
+    if (page !== undefined) params.append("page", page.toString());
+    if (limit !== undefined) params.append("limit", limit.toString());
+    const queryString = params.toString();
+    const url = `services/department/${departmentId}${queryString ? `?${queryString}` : ""}`;
+    return gatewayRequest("GET", url, companyId);
   },
 
-  update: async (id: number, data: any) => {
-    const response = await fetch(`${API_BASE_URL}/services/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+  update: async (companyId: string, id: number, data: any) => {
+    return gatewayRequest("PUT", `services/${id}`, companyId, data);
   },
 
-  delete: async (id: number) => {
-    const response = await fetch(`${API_BASE_URL}/services/${id}`, {
-      method: "DELETE",
-    });
-    return response.json();
+  delete: async (companyId: string, id: number) => {
+    return gatewayRequest("DELETE", `services/${id}`, companyId);
   },
 };
 
 // Common Issues API calls
 export const commonIssuesAPI = {
-  create: async (data: any) => {
-    const response = await fetch(`${API_BASE_URL}/common-issues`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+  create: async (companyId: string, data: any) => {
+    return gatewayRequest("POST", "common-issues", companyId, data);
   },
 
-  getAll: async () => {
-    const response = await fetch(`${API_BASE_URL}/common-issues`);
-    return response.json();
+  getAll: async (companyId: string) => {
+    return gatewayRequest("GET", "common-issues", companyId);
   },
 
-  getById: async (id: number) => {
-    const response = await fetch(`${API_BASE_URL}/common-issues/${id}`);
-    return response.json();
+  getById: async (companyId: string, id: number) => {
+    return gatewayRequest("GET", `common-issues/${id}`, companyId);
   },
 
-  getByService: async (serviceId: number, page?: number, limit?: number) => {
-    let url = `${API_BASE_URL}/common-issues/service/${serviceId}`;
-    if (page !== undefined && limit !== undefined) {
-      url += `?page=${page}&limit=${limit}`;
-    }
-    const response = await fetch(url);
-    return response.json();
+  getByService: async (
+    companyId: string,
+    serviceId: number,
+    page?: number,
+    limit?: number
+  ) => {
+    const params = new URLSearchParams();
+    if (page !== undefined) params.append("page", page.toString());
+    if (limit !== undefined) params.append("limit", limit.toString());
+    const queryString = params.toString();
+    const url = `common-issues/service/${serviceId}${queryString ? `?${queryString}` : ""}`;
+    return gatewayRequest("GET", url, companyId);
   },
 
-  update: async (id: number, data: any) => {
-    const response = await fetch(`${API_BASE_URL}/common-issues/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+  update: async (companyId: string, id: number, data: any) => {
+    return gatewayRequest("PUT", `common-issues/${id}`, companyId, data);
   },
 
-  delete: async (id: number) => {
-    const response = await fetch(`${API_BASE_URL}/common-issues/${id}`, {
-      method: "DELETE",
-    });
-    return response.json();
+  delete: async (companyId: string, id: number) => {
+    return gatewayRequest("DELETE", `common-issues/${id}`, companyId);
   },
 };
 
 // Search API calls
 export const searchAPI = {
   search: async (companyId: string, query: string, topK: number = 10) => {
-    const response = await fetch(`${API_BASE_URL}/search/${companyId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query, topK }),
-    });
-    return response.json();
+    return gatewayRequest("POST", "search", companyId, { query, topK });
   },
 };

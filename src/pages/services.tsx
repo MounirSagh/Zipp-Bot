@@ -1,14 +1,11 @@
 import { Layout } from "@/components/Layout";
 import Loading from "@/components/Loading";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useUser } from "@clerk/clerk-react";
-import { servicesAPI, departmentsAPI, companyAPI } from "../services/api";
+import { servicesAPI, departmentsAPI } from "../services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -35,6 +32,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -53,7 +59,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Plus, Trash2, Contact, Edit2 } from "lucide-react";
+import { Plus, Trash2, Contact, Edit2, Filter } from "lucide-react";
 
 interface Service {
   id: number;
@@ -69,12 +75,14 @@ function Services() {
   const { user } = useUser();
   const [services, setServices] = useState<Service[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
-  const [company, setCompany] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [selectedDepartmentFilter, setSelectedDepartmentFilter] = useState<
+    string | null
+  >(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -86,28 +94,13 @@ function Services() {
   const [, setTotalItems] = useState(0);
   const itemsPerPage = 10;
 
-  useEffect(() => {
-    if (user?.id) {
-      loadAllData();
-    }
-  }, [user, currentPage]);
-
-  const loadAllData = async () => {
+  const loadAllData = useCallback(async () => {
     if (!user?.id) return;
 
     try {
       setLoading(true);
 
-      const companies = await companyAPI.getByCompanyId(user.id);
-      if (!companies || companies.length === 0) {
-        setLoading(false);
-        return;
-      }
-
-      const companyData = companies[0];
-      setCompany(companyData);
-
-      const depts = await departmentsAPI.getByCompany(user?.id);
+      const depts = await departmentsAPI.getByCompany(user.id);
       setDepartments(depts);
 
       if (depts.length === 0) {
@@ -115,13 +108,16 @@ function Services() {
         return;
       }
 
-      const servicePromises = depts.map((dept: any) =>
-        servicesAPI.getByDepartment(dept.id)
+      const deptsToFetch = selectedDepartmentFilter
+        ? [{ id: parseInt(selectedDepartmentFilter) }]
+        : depts;
+
+      const servicePromises = deptsToFetch.map((dept: any) =>
+        servicesAPI.getByDepartment(user.id, dept.id)
       );
       const servicesArrays = await Promise.all(servicePromises);
       const allServices = servicesArrays.flat();
 
-      // Calculate pagination on the aggregated results
       const startIndex = (currentPage - 1) * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
       const paginatedServices = allServices.slice(startIndex, endIndex);
@@ -135,11 +131,19 @@ function Services() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id, currentPage, selectedDepartmentFilter]);
 
-  const createService = async () => {
+  useEffect(() => {
+    if (user?.id) {
+      loadAllData();
+    }
+  }, [user, loadAllData]);
+
+  const createService = useCallback(async () => {
+    if (!user?.id) return;
+
     try {
-      await servicesAPI.create({
+      await servicesAPI.create(user.id, {
         ...formData,
         departmentId: parseInt(formData.departmentId),
       });
@@ -155,13 +159,13 @@ function Services() {
     } catch (error) {
       console.error("Error creating service:", error);
     }
-  };
+  }, [formData, user?.id, loadAllData]);
 
-  const updateService = async () => {
-    if (!selectedService) return;
+  const updateService = useCallback(async () => {
+    if (!selectedService || !user?.id) return;
 
     try {
-      await servicesAPI.update(selectedService.id, {
+      await servicesAPI.update(user.id, selectedService.id, {
         name: formData.name,
         description: formData.description,
         contacts: formData.contacts,
@@ -179,16 +183,16 @@ function Services() {
     } catch (error) {
       console.error("Error updating service:", error);
     }
-  };
+  }, [selectedService, formData, user?.id, loadAllData]);
 
-  const deleteService = async () => {
-    if (!selectedService) return;
+  const deleteService = useCallback(async () => {
+    if (!selectedService || !user?.id) return;
 
     try {
-      await servicesAPI.delete(selectedService.id);
+      await servicesAPI.delete(user.id, selectedService.id);
       setIsDeleteDialogOpen(false);
       setSelectedService(null);
-      // If current page becomes empty after deletion, go to previous page
+
       if (services.length === 1 && currentPage > 1) {
         setCurrentPage(currentPage - 1);
       }
@@ -196,9 +200,9 @@ function Services() {
     } catch (error) {
       console.error("Error deleting service:", error);
     }
-  };
+  }, [selectedService, services.length, currentPage, user?.id, loadAllData]);
 
-  const openEditDialog = (service: Service) => {
+  const openEditDialog = useCallback((service: Service) => {
     setSelectedService(service);
     setFormData({
       name: service.name,
@@ -207,14 +211,14 @@ function Services() {
       departmentId: service.departmentId.toString(),
     });
     setIsEditDialogOpen(true);
-  };
+  }, []);
 
-  const openDeleteDialog = (service: Service) => {
+  const openDeleteDialog = useCallback((service: Service) => {
     setSelectedService(service);
     setIsDeleteDialogOpen(true);
-  };
+  }, []);
 
-  const handleAddDialogClose = () => {
+  const handleAddDialogClose = useCallback(() => {
     setIsAddDialogOpen(false);
     setFormData({
       name: "",
@@ -222,9 +226,9 @@ function Services() {
       contacts: "",
       departmentId: "",
     });
-  };
+  }, []);
 
-  const handleEditDialogClose = () => {
+  const handleEditDialogClose = useCallback(() => {
     setIsEditDialogOpen(false);
     setSelectedService(null);
     setFormData({
@@ -233,7 +237,67 @@ function Services() {
       contacts: "",
       departmentId: "",
     });
-  };
+  }, []);
+
+  const handleFormNameChange = useCallback((e: any) => {
+    setFormData((prev) => ({ ...prev, name: e.target.value }));
+  }, []);
+
+  const handleFormDescriptionChange = useCallback((e: any) => {
+    setFormData((prev) => ({ ...prev, description: e.target.value }));
+  }, []);
+
+  const handleFormContactsChange = useCallback((e: any) => {
+    setFormData((prev) => ({ ...prev, contacts: e.target.value }));
+  }, []);
+
+  const handleFormDepartmentChange = useCallback((value: any) => {
+    setFormData((prev) => ({ ...prev, departmentId: value }));
+  }, []);
+
+  const handlePreviousPage = useCallback(() => {
+    setCurrentPage((prev) => Math.max(1, prev - 1));
+  }, []);
+
+  const handleNextPage = useCallback(() => {
+    setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+  }, [totalPages]);
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+  }, []);
+
+  const handleDepartmentFilterChange = useCallback((value: string) => {
+    setSelectedDepartmentFilter(value === "all" ? null : value);
+    setCurrentPage(1);
+  }, []);
+
+  const paginationPages = useMemo(
+    () => Array.from({ length: totalPages }, (_, i) => i + 1),
+    [totalPages]
+  );
+
+  const isPreviousDisabled = useMemo(() => currentPage === 1, [currentPage]);
+
+  const isNextDisabled = useMemo(
+    () => currentPage === totalPages,
+    [currentPage, totalPages]
+  );
+
+  const departmentMap = useMemo(() => {
+    const map: { [key: number]: string } = {};
+    departments.forEach((dept: any) => {
+      map[dept.id] = dept.name;
+    });
+    return map;
+  }, [departments]);
+
+  const getSelectedDepartmentName = useMemo(() => {
+    if (!selectedDepartmentFilter) return "All Departments";
+    return (
+      departmentMap[parseInt(selectedDepartmentFilter)] || "All Departments"
+    );
+  }, [selectedDepartmentFilter, departmentMap]);
 
   if (!user || loading) {
     return (
@@ -243,7 +307,7 @@ function Services() {
     );
   }
 
-  if (!company || departments.length === 0) {
+  if (departments.length === 0) {
     return (
       <Layout>
         <div className="max-w-6xl mx-auto space-y-6">
@@ -260,43 +324,21 @@ function Services() {
             <CardContent className="pt-6">
               <div className="text-center py-16 border-2 border-dashed border-white/10 rounded-lg">
                 <div className="space-y-3">
-                  {!company ? (
-                    <>
-                      <h3 className="text-lg font-medium text-gray-400">
-                        No Company Profile Found
-                      </h3>
-                      <p className="text-sm text-gray-500 max-w-md mx-auto">
-                        Please set up your company information first.
-                      </p>
-                      <Button
-                        variant="outline"
-                        asChild
-                        className="mt-4 bg-white/5 hover:bg-white/10 border-white/20 text-white"
-                      >
-                        <a href="/WjN2Y1hMTk5saEFneUZZeWZScW1uUjVkRkJoU0E9PQ/general">
-                          Setup Company Profile
-                        </a>
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <h3 className="text-lg font-medium text-gray-400">
-                        No Departments Found
-                      </h3>
-                      <p className="text-sm text-gray-500 max-w-md mx-auto">
-                        Create departments first before adding services.
-                      </p>
-                      <Button
-                        variant="outline"
-                        asChild
-                        className="mt-4 bg-white/5 hover:bg-white/10 border-white/20 text-white"
-                      >
-                        <a href="/WjN2Y1hMTk5saEFneUZZeWZScW1uUjVkRkJoU0E9PQ/departments">
-                          Create Departments
-                        </a>
-                      </Button>
-                    </>
-                  )}
+                  <h3 className="text-lg font-medium text-gray-400">
+                    No Departments Found
+                  </h3>
+                  <p className="text-sm text-gray-500 max-w-md mx-auto">
+                    Create departments first before adding services.
+                  </p>
+                  <Button
+                    variant="outline"
+                    asChild
+                    className="mt-4 bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                  >
+                    <a href="/WjN2Y1hMTk5saEFneUZZeWZScW1uUjVkRkJoU0E9PQ/departments">
+                      Create Departments
+                    </a>
+                  </Button>
                 </div>
               </div>
             </CardContent>
@@ -315,126 +357,157 @@ function Services() {
               Services
             </h1>
             <p className="text-gray-400">
-              Manage {company.name}'s services and customer support offerings
+              Manage your services and customer support offerings
             </p>
           </div>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2 bg-white/10 hover:bg-white/20 border-white/20 text-white">
-                <Plus className="w-4 h-4" />
-                Add Service
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="bg-neutral-900 backdrop-blur-xl border-white/10 max-w-2xl">
-              <DialogHeader>
-                <DialogTitle className="text-white">
-                  Add New Service
-                </DialogTitle>
-                <DialogDescription className="text-gray-400">
-                  Create a new service for your organization.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex items-center gap-4">
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2 bg-white/10 hover:bg-white/20 border-white/20 text-white">
+                  <Plus className="w-4 h-4" />
+                  Add Service
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-neutral-900 backdrop-blur-xl border-white/10 max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle className="text-white">
+                    Add New Service
+                  </DialogTitle>
+                  <DialogDescription className="text-gray-400">
+                    Create a new service for your organization.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="add-name"
+                        className="text-sm font-medium text-white"
+                      >
+                        Service Name
+                      </Label>
+                      <Input
+                        id="add-name"
+                        placeholder="e.g. Technical Support, Customer Service"
+                        value={formData.name}
+                        onChange={handleFormNameChange}
+                        className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="add-department"
+                        className="text-sm font-medium text-white"
+                      >
+                        Department
+                      </Label>
+                      <Select
+                        value={formData.departmentId}
+                        onValueChange={handleFormDepartmentChange}
+                      >
+                        <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                          <SelectValue placeholder="Select department" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
+                          {departments.map((department: any) => (
+                            <SelectItem
+                              key={department.id}
+                              value={department.id.toString()}
+                              className="text-white hover:bg-white/10"
+                            >
+                              {department.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                   <div className="space-y-2">
                     <Label
-                      htmlFor="add-name"
+                      htmlFor="add-description"
                       className="text-sm font-medium text-white"
                     >
-                      Service Name
+                      Description
                     </Label>
                     <Input
-                      id="add-name"
-                      placeholder="e.g. Technical Support, Customer Service"
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
+                      id="add-description"
+                      placeholder="Describe what this service offers"
+                      value={formData.description}
+                      onChange={handleFormDescriptionChange}
                       className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label
-                      htmlFor="add-department"
+                      htmlFor="add-contacts"
                       className="text-sm font-medium text-white"
                     >
-                      Department
+                      Contact Information
                     </Label>
-                    <Select
-                      value={formData.departmentId}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, departmentId: value })
-                      }
-                    >
-                      <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                        <SelectValue placeholder="Select department" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
-                        {departments.map((department: any) => (
-                          <SelectItem
-                            key={department.id}
-                            value={department.id.toString()}
-                            className="text-white hover:bg-white/10"
-                          >
-                            {department.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Input
+                      id="add-contacts"
+                      placeholder="e.g. support@company.com, +1-555-0123"
+                      value={formData.contacts}
+                      onChange={handleFormContactsChange}
+                      className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                    />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="add-description"
-                    className="text-sm font-medium text-white"
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={handleAddDialogClose}
+                    className="bg-white/5 hover:bg-white/10 border-white/20 text-white"
                   >
-                    Description
-                  </Label>
-                  <Input
-                    id="add-description"
-                    placeholder="Describe what this service offers"
-                    value={formData.description}
-                    onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
-                    className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="add-contacts"
-                    className="text-sm font-medium text-white"
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={createService}
+                    className="bg-white/10 hover:bg-white/20 text-white"
                   >
-                    Contact Information
-                  </Label>
-                  <Input
-                    id="add-contacts"
-                    placeholder="e.g. support@company.com, +1-555-0123"
-                    value={formData.contacts}
-                    onChange={(e) =>
-                      setFormData({ ...formData, contacts: e.target.value })
-                    }
-                    className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={handleAddDialogClose}
-                  className="bg-white/5 hover:bg-white/10 border-white/20 text-white"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={createService}
-                  className="bg-white/10 hover:bg-white/20 text-white"
-                >
-                  Create Service
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                    Create Service
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            {/* Department Filter */}
+            <div className="flex justify-end">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="gap-2 bg-white/10 hover:bg-white/20 border-white/20 text-white">
+                    <Filter className="w-4 h-4" />
+                    {getSelectedDepartmentName}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-neutral-900  border-white/10 min-w-[200px]">
+                  <DropdownMenuLabel className="text-white">
+                    Filter by Department
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuRadioGroup
+                    value={selectedDepartmentFilter || "all"}
+                    onValueChange={handleDepartmentFilterChange}
+                  >
+                    <DropdownMenuRadioItem
+                      value="all"
+                      className="text-white hover:bg-white/10 cursor-pointer"
+                    >
+                      All Departments
+                    </DropdownMenuRadioItem>
+                    {departments.map((department: any) => (
+                      <DropdownMenuRadioItem
+                        key={department.id}
+                        value={department.id.toString()}
+                        className="text-white hover:bg-white/10 cursor-pointer"
+                      >
+                        {department.name}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
         </div>
 
         <div className="">
@@ -484,7 +557,7 @@ function Services() {
                             variant="secondary"
                             className="bg-white/10 text-white border-white/20"
                           >
-                            {service.department?.name}
+                            {departmentMap[service.departmentId]}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-gray-400 max-w-xs truncate">
@@ -540,44 +613,36 @@ function Services() {
                   <PaginationContent>
                     <PaginationItem>
                       <PaginationPrevious
-                        onClick={() =>
-                          setCurrentPage(Math.max(1, currentPage - 1))
-                        }
+                        onClick={handlePreviousPage}
                         className={`cursor-pointer bg-white/5 hover:bg-white/10 border-white/20 text-white ${
-                          currentPage === 1
+                          isPreviousDisabled
                             ? "opacity-50 cursor-not-allowed"
                             : ""
                         }`}
                       />
                     </PaginationItem>
 
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                      (page) => (
-                        <PaginationItem key={page}>
-                          <PaginationLink
-                            onClick={() => setCurrentPage(page)}
-                            isActive={currentPage === page}
-                            className={`cursor-pointer ${
-                              currentPage === page
-                                ? "bg-white/20 text-white"
-                                : "bg-white/5 hover:bg-white/10 text-gray-400"
-                            } border-white/20`}
-                          >
-                            {page}
-                          </PaginationLink>
-                        </PaginationItem>
-                      )
-                    )}
+                    {paginationPages.map((page) => (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          onClick={() => handlePageChange(page)}
+                          isActive={currentPage === page}
+                          className={`cursor-pointer ${
+                            currentPage === page
+                              ? "bg-white/20 text-white"
+                              : "bg-white/5 hover:bg-white/10 text-gray-400"
+                          } border-white/20`}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
 
                     <PaginationItem>
                       <PaginationNext
-                        onClick={() =>
-                          setCurrentPage(Math.min(totalPages, currentPage + 1))
-                        }
+                        onClick={handleNextPage}
                         className={`cursor-pointer bg-white/5 hover:bg-white/10 border-white/20 text-white ${
-                          currentPage === totalPages
-                            ? "opacity-50 cursor-not-allowed"
-                            : ""
+                          isNextDisabled ? "opacity-50 cursor-not-allowed" : ""
                         }`}
                       />
                     </PaginationItem>
@@ -609,9 +674,7 @@ function Services() {
                   <Input
                     id="edit-name"
                     value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
+                    onChange={handleFormNameChange}
                     className="bg-white/5 border-white/10 text-white"
                   />
                 </div>
@@ -624,9 +687,7 @@ function Services() {
                   </Label>
                   <Select
                     value={formData.departmentId}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, departmentId: value })
-                    }
+                    onValueChange={handleFormDepartmentChange}
                   >
                     <SelectTrigger className="bg-white/5 border-white/10 text-white">
                       <SelectValue />
@@ -655,9 +716,7 @@ function Services() {
                 <Input
                   id="edit-description"
                   value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
+                  onChange={handleFormDescriptionChange}
                   className="bg-white/5 border-white/10 text-white"
                 />
               </div>
@@ -671,9 +730,7 @@ function Services() {
                 <Input
                   id="edit-contacts"
                   value={formData.contacts}
-                  onChange={(e) =>
-                    setFormData({ ...formData, contacts: e.target.value })
-                  }
+                  onChange={handleFormContactsChange}
                   className="bg-white/5 border-white/10 text-white"
                 />
               </div>

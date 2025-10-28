@@ -1,6 +1,6 @@
 import { Layout } from "@/components/Layout";
 import Loading from "@/components/Loading";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { companyAPI, searchAPI } from "../services/api";
 import { Button } from "@/components/ui/button";
@@ -30,19 +30,12 @@ function General() {
     description: "",
   });
 
-  useEffect(() => {
-    if (user?.id) {
-      loadAllData();
-    }
-  }, [user]);
-
-  const loadAllData = async () => {
+  const loadAllData = useCallback(async () => {
     if (!user?.id) return;
 
     try {
       setDataLoading(true);
 
-      // Get company data
       const companies = await companyAPI.getByCompanyId(user.id);
       if (companies && companies.length > 0) {
         const companyData = companies[0];
@@ -58,16 +51,22 @@ function General() {
     } finally {
       setDataLoading(false);
     }
-  };
+  }, [user?.id]);
 
-  const createOrUpdateCompany = async () => {
+  useEffect(() => {
+    if (user?.id) {
+      loadAllData();
+    }
+  }, [user, loadAllData]);
+
+  const createOrUpdateCompany = useCallback(async () => {
     if (!user?.id) return;
 
     try {
       if (company) {
-        await companyAPI.update(company.id, companyForm);
+        await companyAPI.update(user.id, company.id, companyForm);
       } else {
-        await companyAPI.create({
+        await companyAPI.create(user.id, {
           ...companyForm,
           companyId: user.id,
         });
@@ -77,9 +76,9 @@ function General() {
     } catch (error) {
       console.error("Error saving company:", error);
     }
-  };
+  }, [user?.id, company, companyForm, loadAllData]);
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     if (!user?.id || !searchQuery) return;
 
     setLoading(true);
@@ -91,7 +90,38 @@ function General() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id, searchQuery]);
+
+  const handleSearchQueryChange = useCallback((e: any) => {
+    setSearchQuery(e.target.value);
+  }, []);
+
+  const handleEditFormChange = useCallback((field: any, value: any) => {
+    setCompanyForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  }, []);
+
+  const handleToggleEditForm = useCallback(() => {
+    setShowEditForm((prev) => !prev);
+  }, []);
+
+  const isSearchDisabled = useMemo(
+    () => loading || !searchQuery || !company,
+    [loading, searchQuery, company]
+  );
+
+  const formattedSearchResults = useMemo(() => {
+    return searchResults.map((result: any) => ({
+      ...result,
+      type: result.metadata?.type?.toUpperCase() || "UNKNOWN",
+      matchPercentage: (result.score * 100).toFixed(1),
+      title: result.metadata?.name || "Untitled",
+      description: result.metadata?.description || "No description available",
+      solutions: result.metadata?.solutions,
+    }));
+  }, [searchResults]);
 
   if (!user || dataLoading) {
     return (
@@ -118,13 +148,13 @@ function General() {
             <Input
               placeholder="Search your knowledge base"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearchQueryChange}
               className="flex-1 bg-white/5 border-white/10 text-white placeholder:text-gray-500"
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             />
             <Button
               onClick={handleSearch}
-              disabled={loading || !searchQuery || !company}
+              disabled={isSearchDisabled}
               className="gap-2 bg-white/10 hover:bg-white/20 text-white disabled:bg-white/5 disabled:text-gray-600"
             >
               <Search className="w-4 h-4" />
@@ -141,7 +171,7 @@ function General() {
           )}
 
           {/* Search Results */}
-          {searchResults.length > 0 && (
+          {formattedSearchResults.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-medium text-white">
@@ -151,11 +181,11 @@ function General() {
                   variant="outline"
                   className="bg-white/10 text-white border-white/20"
                 >
-                  {searchResults.length} found
+                  {formattedSearchResults.length} found
                 </Badge>
               </div>
               <div className="grid gap-4">
-                {searchResults.map((result: any, index: number) => (
+                {formattedSearchResults.map((result: any, index: number) => (
                   <Card
                     key={index}
                     className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all duration-300"
@@ -166,28 +196,27 @@ function General() {
                           variant="secondary"
                           className="text-xs bg-white/10 text-white border-white/20"
                         >
-                          {result.metadata?.type?.toUpperCase() || "UNKNOWN"}
+                          {result.type}
                         </Badge>
                         <Badge
                           variant="outline"
                           className="text-xs bg-white/10 text-white border-white/20"
                         >
-                          {(result.score * 100).toFixed(1)}% match
+                          {result.matchPercentage}% match
                         </Badge>
                       </div>
                       <h4 className="font-semibold mb-2 text-white">
-                        {result.metadata?.name || "Untitled"}
+                        {result.title}
                       </h4>
                       <p className="text-gray-400 text-sm mb-2">
-                        {result.metadata?.description ||
-                          "No description available"}
+                        {result.description}
                       </p>
-                      {result.metadata?.solutions && (
+                      {result.solutions && (
                         <p className="text-sm text-gray-500">
                           <span className="font-medium text-gray-400">
                             Solutions:
                           </span>{" "}
-                          {result.metadata.solutions}
+                          {result.solutions}
                         </p>
                       )}
                     </CardContent>
@@ -206,7 +235,7 @@ function General() {
               </CardDescription>
             </div>
             <Button
-              onClick={() => setShowEditForm(!showEditForm)}
+              onClick={handleToggleEditForm}
               variant={showEditForm ? "outline" : "default"}
               size="sm"
               className="gap-2 bg-white/10 hover:bg-white/20 border-white/20 text-white"
@@ -238,10 +267,7 @@ function General() {
                       placeholder="Enter company name"
                       value={companyForm.name}
                       onChange={(e) =>
-                        setCompanyForm({
-                          ...companyForm,
-                          name: e.target.value,
-                        })
+                        handleEditFormChange("name", e.target.value)
                       }
                       className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
                     />
@@ -254,10 +280,7 @@ function General() {
                       placeholder="e.g. Technology, Healthcare, Finance"
                       value={companyForm.field}
                       onChange={(e) =>
-                        setCompanyForm({
-                          ...companyForm,
-                          field: e.target.value,
-                        })
+                        handleEditFormChange("field", e.target.value)
                       }
                       className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
                     />
@@ -271,10 +294,7 @@ function General() {
                     placeholder="Describe your company's mission and services"
                     value={companyForm.description}
                     onChange={(e) =>
-                      setCompanyForm({
-                        ...companyForm,
-                        description: e.target.value,
-                      })
+                      handleEditFormChange("description", e.target.value)
                     }
                     className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
                   />

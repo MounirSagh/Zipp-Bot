@@ -1,12 +1,11 @@
 import { Layout } from "@/components/Layout";
 import Loading from "@/components/Loading";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useUser } from "@clerk/clerk-react";
-import { departmentsAPI, companyAPI } from "../services/api";
+import { departmentsAPI } from "../services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Card,
   CardContent,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -60,7 +59,6 @@ interface Department {
 function Departments() {
   const { user } = useUser();
   const [departments, setDepartments] = useState<Department[]>([]);
-  const [company, setCompany] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -76,43 +74,23 @@ function Departments() {
   const [, setTotalItems] = useState(0);
   const itemsPerPage = 10;
 
-  useEffect(() => {
-    if (user?.id) {
-      loadAllData();
-    }
-  }, [user, currentPage]);
-
-  const loadAllData = async () => {
+  const loadAllData = useCallback(async () => {
     if (!user?.id) return;
 
     try {
       setLoading(true);
-
-      // Get company data
-      const companies = await companyAPI.getByCompanyId(user.id);
-      if (!companies || companies.length === 0) {
-        setLoading(false);
-        return;
-      }
-
-      const companyData = companies[0];
-      setCompany(companyData);
-
-      // Get departments with pagination
       const response = await departmentsAPI.getByCompany(
-        user?.id,
+        user.id,
         currentPage,
         itemsPerPage
       );
       console.log(response);
 
-      // Handle response format - backend should return { data, total, page, limit }
       if (response.data) {
         setDepartments(response.data);
         setTotalItems(response.total || 0);
         setTotalPages(Math.ceil((response.total || 0) / itemsPerPage));
       } else {
-        // Fallback if backend doesn't support pagination yet
         setDepartments(response);
         setTotalItems(response.length);
         setTotalPages(1);
@@ -122,15 +100,21 @@ function Departments() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id, currentPage]);
 
-  const createDepartment = async () => {
-    if (!company) return;
+  useEffect(() => {
+    if (user?.id) {
+      loadAllData();
+    }
+  }, [user, loadAllData]);
+
+  const createDepartment = useCallback(async () => {
+    if (!user?.id) return;
 
     try {
-      await departmentsAPI.create({
+      await departmentsAPI.create(user.id, {
         ...formData,
-        companyId: user?.id,
+        companyId: user.id,
       });
       setFormData({ name: "", description: "" });
       setIsAddDialogOpen(false);
@@ -139,16 +123,16 @@ function Departments() {
     } catch (error) {
       console.error("Error creating department:", error);
     }
-  };
+  }, [formData, user?.id, loadAllData]);
 
-  const updateDepartment = async () => {
-    if (!selectedDepartment) return;
+  const updateDepartment = useCallback(async () => {
+    if (!selectedDepartment || !user?.id) return;
 
     try {
-      await departmentsAPI.update(selectedDepartment.id, {
+      await departmentsAPI.update(user.id, selectedDepartment.id, {
         name: formData.name,
         description: formData.description,
-        companyId: user?.id,
+        companyId: user.id,
       });
       setIsEditDialogOpen(false);
       setSelectedDepartment(null);
@@ -157,16 +141,15 @@ function Departments() {
     } catch (error) {
       console.error("Error updating department:", error);
     }
-  };
+  }, [selectedDepartment, formData, user?.id, loadAllData]);
 
-  const deleteDepartment = async () => {
-    if (!selectedDepartment) return;
+  const deleteDepartment = useCallback(async () => {
+    if (!selectedDepartment || !user?.id) return;
 
     try {
-      await departmentsAPI.delete(selectedDepartment.id);
+      await departmentsAPI.delete(user.id, selectedDepartment.id);
       setIsDeleteDialogOpen(false);
       setSelectedDepartment(null);
-      // If current page becomes empty after deletion, go to previous page
       if (departments.length === 1 && currentPage > 1) {
         setCurrentPage(currentPage - 1);
       }
@@ -174,79 +157,69 @@ function Departments() {
     } catch (error) {
       console.error("Error deleting department:", error);
     }
-  };
+  }, [selectedDepartment, departments.length, currentPage, user?.id, loadAllData]);
 
-  const openEditDialog = (department: Department) => {
+  const openEditDialog = useCallback((department: Department) => {
     setSelectedDepartment(department);
     setFormData({
       name: department.name,
       description: department.description,
     });
     setIsEditDialogOpen(true);
-  };
+  }, []);
 
-  const openDeleteDialog = (department: Department) => {
+  const openDeleteDialog = useCallback((department: Department) => {
     setSelectedDepartment(department);
     setIsDeleteDialogOpen(true);
-  };
+  }, []);
 
-  const handleAddDialogClose = () => {
+  const handleAddDialogClose = useCallback(() => {
     setIsAddDialogOpen(false);
     setFormData({ name: "", description: "" });
-  };
+  }, []);
 
-  const handleEditDialogClose = () => {
+  const handleEditDialogClose = useCallback(() => {
     setIsEditDialogOpen(false);
     setSelectedDepartment(null);
     setFormData({ name: "", description: "" });
-  };
+  }, []);
+
+  const handleFormNameChange = useCallback((e: any) => {
+    setFormData((prev) => ({ ...prev, name: e.target.value }));
+  }, []);
+
+  const handleFormDescriptionChange = useCallback((e: any) => {
+    setFormData((prev) => ({ ...prev, description: e.target.value }));
+  }, []);
+
+  const handlePreviousPage = useCallback(() => {
+    setCurrentPage((prev) => Math.max(1, prev - 1));
+  }, []);
+
+  const handleNextPage = useCallback(() => {
+    setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+  }, [totalPages]);
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+  }, []);
+
+  const paginationPages = useMemo(
+    () => Array.from({ length: totalPages }, (_, i) => i + 1),
+    [totalPages]
+  );
+
+  const isPreviousDisabled = useMemo(() => currentPage === 1, [currentPage]);
+
+  const isNextDisabled = useMemo(
+    () => currentPage === totalPages,
+    [currentPage, totalPages]
+  );
 
   if (!user || loading) {
     return (
       <Layout>
         <Loading />
-      </Layout>
-    );
-  }
-
-  if (!company) {
-    return (
-      <Layout>
-        <div className="max-w-6xl mx-auto space-y-6">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight text-white">
-              Departments
-            </h1>
-            <p className="text-gray-400">
-              Manage your organization's departments and structure
-            </p>
-          </div>
-
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-            <CardContent className="pt-6">
-              <div className="text-center py-16 border-2 border-dashed border-white/10 rounded-lg">
-                <div className="space-y-3">
-                  <h3 className="text-lg font-medium text-gray-400">
-                    No Company Profile Found
-                  </h3>
-                  <p className="text-sm text-gray-500 max-w-md mx-auto">
-                    Please set up your company information first before managing
-                    departments.
-                  </p>
-                  <Button
-                    variant="outline"
-                    asChild
-                    className="mt-4 bg-white/5 hover:bg-white/10 border-white/20 text-white"
-                  >
-                    <a href="/WjN2Y1hMTk5saEFneUZZeWZScW1uUjVkRkJoU0E9PQ/general">
-                      Setup Company Profile
-                    </a>
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </Layout>
     );
   }
@@ -260,7 +233,7 @@ function Departments() {
               Departments
             </h1>
             <p className="text-gray-400">
-              Manage {company.name}'s organizational structure and departments
+              Manage your organizational structure and departments
             </p>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -291,9 +264,7 @@ function Departments() {
                     id="add-name"
                     placeholder="e.g. Customer Support, Sales, Engineering"
                     value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
+                    onChange={handleFormNameChange}
                     className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
                   />
                 </div>
@@ -308,9 +279,7 @@ function Departments() {
                     id="add-description"
                     placeholder="Describe the department's role and responsibilities"
                     value={formData.description}
-                    onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
+                    onChange={handleFormDescriptionChange}
                     className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
                   />
                 </div>
@@ -413,42 +382,36 @@ function Departments() {
                   <PaginationContent>
                     <PaginationItem>
                       <PaginationPrevious
-                        onClick={() =>
-                          setCurrentPage(Math.max(1, currentPage - 1))
-                        }
+                        onClick={handlePreviousPage}
                         className={`cursor-pointer bg-white/5 hover:bg-white/10 border-white/20 text-white ${
-                          currentPage === 1
+                          isPreviousDisabled
                             ? "opacity-50 cursor-not-allowed"
                             : ""
                         }`}
                       />
                     </PaginationItem>
 
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                      (page) => (
-                        <PaginationItem key={page}>
-                          <PaginationLink
-                            onClick={() => setCurrentPage(page)}
-                            isActive={currentPage === page}
-                            className={`cursor-pointer ${
-                              currentPage === page
-                                ? "bg-white/20 text-white"
-                                : "bg-white/5 hover:bg-white/10 text-gray-400"
-                            } border-white/20`}
-                          >
-                            {page}
-                          </PaginationLink>
-                        </PaginationItem>
-                      )
-                    )}
+                    {paginationPages.map((page) => (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          onClick={() => handlePageChange(page)}
+                          isActive={currentPage === page}
+                          className={`cursor-pointer ${
+                            currentPage === page
+                              ? "bg-white/20 text-white"
+                              : "bg-white/5 hover:bg-white/10 text-gray-400"
+                          } border-white/20`}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
 
                     <PaginationItem>
                       <PaginationNext
-                        onClick={() =>
-                          setCurrentPage(Math.min(totalPages, currentPage + 1))
-                        }
+                        onClick={handleNextPage}
                         className={`cursor-pointer bg-white/5 hover:bg-white/10 border-white/20 text-white ${
-                          currentPage === totalPages
+                          isNextDisabled
                             ? "opacity-50 cursor-not-allowed"
                             : ""
                         }`}
@@ -481,9 +444,7 @@ function Departments() {
                 <Input
                   id="edit-name"
                   value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
+                  onChange={handleFormNameChange}
                   className="bg-white/5 border-white/10 text-white"
                 />
               </div>
@@ -497,9 +458,7 @@ function Departments() {
                 <Input
                   id="edit-description"
                   value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
+                  onChange={handleFormDescriptionChange}
                   className="bg-white/5 border-white/10 text-white"
                 />
               </div>

@@ -1,20 +1,12 @@
 import { Layout } from "@/components/Layout";
 import Loading from "@/components/Loading";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useUser } from "@clerk/clerk-react";
-import {
-  commonIssuesAPI,
-  servicesAPI,
-  departmentsAPI,
-  companyAPI,
-} from "../services/api";
+import { commonIssuesAPI, servicesAPI, departmentsAPI } from "../services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -59,7 +51,16 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Plus, Trash2, AlertCircle, Edit2 } from "lucide-react";
+import { Plus, Trash2, AlertCircle, Edit2, Filter } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 interface CommonIssue {
   id: number;
@@ -74,7 +75,6 @@ function Issues() {
   const { user } = useUser();
   const [issues, setIssues] = useState<CommonIssue[]>([]);
   const [services, setServices] = useState<any[]>([]);
-  const [company, setCompany] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -91,57 +91,62 @@ function Issues() {
   const [, setTotalItems] = useState(0);
   const itemsPerPage = 10;
 
-  useEffect(() => {
-    if (user?.id) {
-      loadAllData();
-    }
-  }, [user, currentPage]);
+  const [selectedDepartmentFilter, setSelectedDepartmentFilter] = useState<
+    string | null
+  >(null);
+  const [selectedServiceFilter, setSelectedServiceFilter] = useState<
+    string | null
+  >(null);
+  const [departments, setDepartments] = useState<any[]>([]);
 
-  const loadAllData = async () => {
+  const loadAllData = useCallback(async () => {
     if (!user?.id) return;
 
     try {
       setLoading(true);
 
-      // Step 1: Get company (single call)
-      const companies = await companyAPI.getByCompanyId(user.id);
-      if (!companies || companies.length === 0) {
-        setLoading(false);
-        return;
-      }
-
-      const companyData = companies[0];
-      setCompany(companyData);
-
-      // Step 2: Get departments
-      const depts = await departmentsAPI.getByCompany(user?.id);
+      const depts = await departmentsAPI.getByCompany(user.id);
+      setDepartments(depts);
 
       if (depts.length === 0) {
+        setIssues([]);
+        setServices([]);
+        setTotalItems(0);
+        setTotalPages(1);
         setLoading(false);
         return;
       }
 
-      // Step 3: Get all services in parallel
-      const servicePromises = depts.map((dept: any) =>
-        servicesAPI.getByDepartment(dept.id)
+      const deptsToFetch = selectedDepartmentFilter
+        ? [{ id: parseInt(selectedDepartmentFilter) }]
+        : depts;
+
+      const servicePromises = deptsToFetch.map((dept: any) =>
+        servicesAPI.getByDepartment(user.id, dept.id)
       );
       const servicesArrays = await Promise.all(servicePromises);
       const allServices = servicesArrays.flat();
+
       setServices(allServices);
 
       if (allServices.length === 0) {
+        setIssues([]);
+        setTotalItems(0);
+        setTotalPages(1);
         setLoading(false);
         return;
       }
 
-      // Step 4: Get all issues with pagination
-      const issuePromises = allServices.map((service: any) =>
-        commonIssuesAPI.getByService(service.id)
+      const servicesToFetch = selectedServiceFilter
+        ? [{ id: parseInt(selectedServiceFilter) }]
+        : allServices;
+
+      const issuePromises = servicesToFetch.map((service: any) =>
+        commonIssuesAPI.getByService(user.id, service.id)
       );
       const issuesArrays = await Promise.all(issuePromises);
       const allIssues = issuesArrays.flat();
 
-      // Calculate pagination on the aggregated results
       const startIndex = (currentPage - 1) * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
       const paginatedIssues = allIssues.slice(startIndex, endIndex);
@@ -154,18 +159,36 @@ function Issues() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [
+    user?.id,
+    currentPage,
+    itemsPerPage,
+    selectedDepartmentFilter,
+    selectedServiceFilter,
+  ]);
 
-  const createIssue = async () => {
+  useEffect(() => {
+    if (user?.id) {
+      loadAllData();
+    }
+  }, [user?.id, loadAllData]);
+
+  const parseSolutions = useCallback((solutionsData: any) => {
     try {
-      let solutionsData;
-      try {
-        solutionsData = JSON.parse(formData.solutions);
-      } catch {
-        solutionsData = { description: formData.solutions };
-      }
+      return typeof solutionsData === "string"
+        ? JSON.parse(solutionsData)
+        : solutionsData;
+    } catch {
+      return { description: solutionsData };
+    }
+  }, []);
 
-      await commonIssuesAPI.create({
+  const createIssue = useCallback(async () => {
+    if (!user?.id) return;
+
+    try {
+      const solutionsData = parseSolutions(formData.solutions);
+      await commonIssuesAPI.create(user.id, {
         name: formData.name,
         description: formData.description,
         solutions: solutionsData,
@@ -178,23 +201,14 @@ function Issues() {
     } catch (error) {
       console.error("Error creating issue:", error);
     }
-  };
+  }, [formData, parseSolutions, user?.id, loadAllData]);
 
-  const updateIssue = async () => {
-    if (!selectedIssue) return;
+  const updateIssue = useCallback(async () => {
+    if (!selectedIssue || !user?.id) return;
 
     try {
-      let solutionsData;
-      try {
-        solutionsData =
-          typeof formData.solutions === "string"
-            ? JSON.parse(formData.solutions)
-            : formData.solutions;
-      } catch {
-        solutionsData = { description: formData.solutions };
-      }
-
-      await commonIssuesAPI.update(selectedIssue.id, {
+      const solutionsData = parseSolutions(formData.solutions);
+      await commonIssuesAPI.update(user.id, selectedIssue.id, {
         name: formData.name,
         description: formData.description,
         solutions: solutionsData,
@@ -207,16 +221,15 @@ function Issues() {
     } catch (error) {
       console.error("Error updating issue:", error);
     }
-  };
+  }, [selectedIssue, formData, parseSolutions, user?.id, loadAllData]);
 
-  const deleteIssue = async () => {
-    if (!selectedIssue) return;
+  const deleteIssue = useCallback(async () => {
+    if (!selectedIssue || !user?.id) return;
 
     try {
-      await commonIssuesAPI.delete(selectedIssue.id);
+      await commonIssuesAPI.delete(user.id, selectedIssue.id);
       setIsDeleteDialogOpen(false);
       setSelectedIssue(null);
-      // If current page becomes empty after deletion, go to previous page
       if (issues.length === 1 && currentPage > 1) {
         setCurrentPage(currentPage - 1);
       }
@@ -224,9 +237,9 @@ function Issues() {
     } catch (error) {
       console.error("Error deleting issue:", error);
     }
-  };
+  }, [selectedIssue, issues.length, currentPage, user?.id, loadAllData]);
 
-  const openEditDialog = (issue: CommonIssue) => {
+  const openEditDialog = useCallback((issue: CommonIssue) => {
     setSelectedIssue(issue);
     setFormData({
       name: issue.name,
@@ -238,23 +251,99 @@ function Issues() {
       serviceId: issue.serviceId.toString(),
     });
     setIsEditDialogOpen(true);
-  };
+  }, []);
 
-  const openDeleteDialog = (issue: CommonIssue) => {
+  const openDeleteDialog = useCallback((issue: CommonIssue) => {
     setSelectedIssue(issue);
     setIsDeleteDialogOpen(true);
-  };
+  }, []);
 
-  const handleAddDialogClose = () => {
+  const handleAddDialogClose = useCallback(() => {
     setIsAddDialogOpen(false);
     setFormData({ name: "", description: "", solutions: "", serviceId: "" });
-  };
+  }, []);
 
-  const handleEditDialogClose = () => {
+  const handleEditDialogClose = useCallback(() => {
     setIsEditDialogOpen(false);
     setSelectedIssue(null);
     setFormData({ name: "", description: "", solutions: "", serviceId: "" });
-  };
+  }, []);
+
+  const handleFormNameChange = useCallback((e: any) => {
+    setFormData((prev) => ({ ...prev, name: e.target.value }));
+  }, []);
+  const handleFormDescriptionChange = useCallback((e: any) => {
+    setFormData((prev) => ({ ...prev, description: e.target.value }));
+  }, []);
+  const handleFormSolutionsChange = useCallback((e: any) => {
+    setFormData((prev) => ({ ...prev, solutions: e.target.value }));
+  }, []);
+  const handleFormServiceChange = useCallback((value: any) => {
+    setFormData((prev) => ({ ...prev, serviceId: value }));
+  }, []);
+
+  const handlePreviousPage = useCallback(() => {
+    setCurrentPage((prev) => Math.max(1, prev - 1));
+  }, []);
+  const handleNextPage = useCallback(() => {
+    setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+  }, [totalPages]);
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+  }, []);
+
+  const handleDepartmentFilterChange = useCallback((value: string) => {
+    setSelectedDepartmentFilter(value === "all" ? null : value);
+    setSelectedServiceFilter(null);
+    setCurrentPage(1);
+  }, []);
+
+  const handleServiceFilterChange = useCallback((value: string) => {
+    setSelectedServiceFilter(value === "all" ? null : value);
+    setCurrentPage(1);
+  }, []);
+
+  const paginationPages = useMemo(
+    () => Array.from({ length: totalPages }, (_, i) => i + 1),
+    [totalPages]
+  );
+  const isPreviousDisabled = useMemo(() => currentPage === 1, [currentPage]);
+  const isNextDisabled = useMemo(
+    () => currentPage === totalPages,
+    [currentPage, totalPages]
+  );
+
+  const departmentMap = useMemo(() => {
+    const map: { [key: number]: string } = {};
+    departments.forEach((dept: any) => {
+      map[dept.id] = dept.name;
+    });
+    return map;
+  }, [departments]);
+
+  const serviceMap = useMemo(() => {
+    const map: { [key: number]: { name: string; department: string } } = {};
+    services.forEach((service: any) => {
+      map[service.id] = {
+        name: service.name,
+        department: service.department?.name || "Unknown",
+      };
+    });
+    return map;
+  }, [services]);
+
+  const getSelectedDepartmentName = useMemo(() => {
+    if (!selectedDepartmentFilter) return "All Departments";
+    return (
+      departmentMap[parseInt(selectedDepartmentFilter)] || "All Departments"
+    );
+  }, [selectedDepartmentFilter, departmentMap]);
+
+  const getSelectedServiceName = useMemo(() => {
+    if (!selectedServiceFilter) return "All Services";
+    const s = serviceMap[parseInt(selectedServiceFilter)];
+    return s?.name ?? "All Services";
+  }, [selectedServiceFilter, serviceMap]);
 
   if (!user || loading) {
     return (
@@ -264,7 +353,7 @@ function Issues() {
     );
   }
 
-  if (!company || services.length === 0) {
+  if (services.length === 0) {
     return (
       <Layout>
         <div className="max-w-6xl mx-auto space-y-6">
@@ -281,44 +370,22 @@ function Issues() {
             <CardContent className="pt-6">
               <div className="text-center py-16 border-2 border-dashed border-white/10 rounded-lg">
                 <div className="space-y-3">
-                  {!company ? (
-                    <>
-                      <h3 className="text-lg font-medium text-gray-400">
-                        No Company Profile Found
-                      </h3>
-                      <p className="text-sm text-gray-500 max-w-md mx-auto">
-                        Please set up your company information first.
-                      </p>
-                      <Button
-                        variant="outline"
-                        asChild
-                        className="mt-4 bg-white/5 hover:bg-white/10 border-white/20 text-white"
-                      >
-                        <a href="/WjN2Y1hMTk5saEFneUZZeWZScW1uUjVkRkJoU0E9PQ/general">
-                          Setup Company Profile
-                        </a>
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <h3 className="text-lg font-medium text-gray-400">
-                        No Services Found
-                      </h3>
-                      <p className="text-sm text-gray-500 max-w-md mx-auto">
-                        Please set up your company, departments, and services
-                        first before managing common issues.
-                      </p>
-                      <Button
-                        variant="outline"
-                        asChild
-                        className="mt-4 bg-white/5 hover:bg-white/10 border-white/20 text-white"
-                      >
-                        <a href="/WjN2Y1hMTk5saEFneUZZeWZScW1uUjVkRkJoU0E9PQ/services">
-                          Setup Services
-                        </a>
-                      </Button>
-                    </>
-                  )}
+                  <h3 className="text-lg font-medium text-gray-400">
+                    No Services Found
+                  </h3>
+                  <p className="text-sm text-gray-500 max-w-md mx-auto">
+                    Please set up your company, departments, and services first
+                    before managing common issues.
+                  </p>
+                  <Button
+                    variant="outline"
+                    asChild
+                    className="mt-4 bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                  >
+                    <a href="/WjN2Y1hMTk5saEFneUZZeWZScW1uUjVkRkJoU0E9PQ/services">
+                      Setup Services
+                    </a>
+                  </Button>
                 </div>
               </div>
             </CardContent>
@@ -337,130 +404,197 @@ function Issues() {
               Common Issues
             </h1>
             <p className="text-gray-400">
-              Manage {company.name}'s frequently encountered problems and their
-              solutions
+              Manage your frequently encountered problems and their solutions
             </p>
           </div>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2 bg-white/10 hover:bg-white/20 border-white/20 text-white">
-                <Plus className="w-4 h-4" />
-                Add Issue
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="bg-neutral-900 backdrop-blur-xl border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="text-white">
-                  Add New Common Issue
-                </DialogTitle>
-                <DialogDescription className="text-gray-400">
-                  Create a new common issue and its solutions.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex items-center gap-4">
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2 bg-white/10 hover:bg-white/20 border-white/20 text-white">
+                  <Plus className="w-4 h-4" />
+                  Add Issue
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-neutral-900 backdrop-blur-xl border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-white">
+                    Add New Common Issue
+                  </DialogTitle>
+                  <DialogDescription className="text-gray-400">
+                    Create a new common issue and its solutions.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="add-name"
+                        className="text-sm font-medium text-white"
+                      >
+                        Issue Name
+                      </Label>
+                      <Input
+                        id="add-name"
+                        placeholder="e.g. Login Problems, Payment Failed"
+                        value={formData.name}
+                        onChange={handleFormNameChange}
+                        className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="add-service"
+                        className="text-sm font-medium text-white"
+                      >
+                        Service
+                      </Label>
+                      <Select
+                        value={formData.serviceId}
+                        onValueChange={handleFormServiceChange}
+                      >
+                        <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                          <SelectValue placeholder="Select service" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
+                          {services.map((service: any) => (
+                            <SelectItem
+                              key={service.id}
+                              value={service.id.toString()}
+                              className="text-white hover:bg-white/10"
+                            >
+                              {service.name} ({service.department?.name})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                   <div className="space-y-2">
                     <Label
-                      htmlFor="add-name"
+                      htmlFor="add-description"
                       className="text-sm font-medium text-white"
                     >
-                      Issue Name
+                      Description
                     </Label>
                     <Input
-                      id="add-name"
-                      placeholder="e.g. Login Problems, Payment Failed"
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
+                      id="add-description"
+                      placeholder="Describe the common issue"
+                      value={formData.description}
+                      onChange={handleFormDescriptionChange}
                       className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label
-                      htmlFor="add-service"
+                      htmlFor="add-solutions"
                       className="text-sm font-medium text-white"
                     >
-                      Service
+                      Solutions
                     </Label>
-                    <Select
-                      value={formData.serviceId}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, serviceId: value })
-                      }
-                    >
-                      <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                        <SelectValue placeholder="Select service" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
-                        {services.map((service: any) => (
-                          <SelectItem
-                            key={service.id}
-                            value={service.id.toString()}
-                            className="text-white hover:bg-white/10"
-                          >
-                            {service.name} ({service.department?.name})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Textarea
+                      id="add-solutions"
+                      placeholder="Provide solutions (JSON format or plain text)"
+                      value={formData.solutions}
+                      onChange={handleFormSolutionsChange}
+                      className="min-h-[120px] bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                    />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="add-description"
-                    className="text-sm font-medium text-white"
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={handleAddDialogClose}
+                    className="bg-white/5 hover:bg-white/10 border-white/20 text-white"
                   >
-                    Description
-                  </Label>
-                  <Input
-                    id="add-description"
-                    placeholder="Describe the common issue"
-                    value={formData.description}
-                    onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
-                    className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="add-solutions"
-                    className="text-sm font-medium text-white"
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={createIssue}
+                    className="bg-white/10 hover:bg-white/20 text-white"
                   >
-                    Solutions
-                  </Label>
-                  <Textarea
-                    id="add-solutions"
-                    placeholder="Provide solutions (JSON format or plain text)"
-                    value={formData.solutions}
-                    onChange={(e) =>
-                      setFormData({ ...formData, solutions: e.target.value })
-                    }
-                    className="min-h-[120px] bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={handleAddDialogClose}
-                  className="bg-white/5 hover:bg-white/10 border-white/20 text-white"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={createIssue}
-                  className="bg-white/10 hover:bg-white/20 text-white"
-                >
-                  Create Issue
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                    Create Issue
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            <div className="flex justify-end">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="gap-2 bg-white/10 hover:bg-white/20 border-white/20 text-white">
+                    <Filter className="w-4 h-4" />
+                    {getSelectedDepartmentName}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-neutral-900 border-white/10 min-w-[200px]">
+                  <DropdownMenuLabel className="text-white">
+                    Filter by Department
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuRadioGroup
+                    value={selectedDepartmentFilter || "all"}
+                    onValueChange={handleDepartmentFilterChange}
+                  >
+                    <DropdownMenuRadioItem
+                      value="all"
+                      className="text-white hover:bg-white/10 cursor-pointer"
+                    >
+                      All Departments
+                    </DropdownMenuRadioItem>
+                    {departments.map((department: any) => (
+                      <DropdownMenuRadioItem
+                        key={department.id}
+                        value={department.id.toString()}
+                        className="text-white hover:bg-white/10 cursor-pointer"
+                      >
+                        {department.name}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            <div className="flex justify-end">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="gap-2 bg-white/10 hover:bg-white/20 border-white/20 text-white">
+                    <Filter className="w-4 h-4" />
+                    {getSelectedServiceName}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-neutral-900 border-white/10 min-w-[200px]">
+                  <DropdownMenuLabel className="text-white">
+                    Filter by Service
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuRadioGroup
+                    value={selectedServiceFilter || "all"}
+                    onValueChange={handleServiceFilterChange}
+                  >
+                    <DropdownMenuRadioItem
+                      value="all"
+                      className="text-white hover:bg-white/10 cursor-pointer"
+                    >
+                      All Services
+                    </DropdownMenuRadioItem>
+                    {services.map((service: any) => (
+                      <DropdownMenuRadioItem
+                        key={service.id}
+                        value={service.id.toString()}
+                        className="text-white hover:bg-white/10 cursor-pointer"
+                      >
+                        {service.name}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
         </div>
 
-        <div className="">
+        <div>
           <CardContent>
             {issues.length === 0 ? (
               <div className="text-center py-12 border-2 border-dashed border-white/10 rounded-lg">
@@ -475,7 +609,7 @@ function Issues() {
                 </div>
               </div>
             ) : (
-              <div className="">
+              <div>
                 <Table>
                   <TableHeader>
                     <TableRow className="border-white/10 hover:bg-white/5">
@@ -506,7 +640,7 @@ function Issues() {
                             variant="secondary"
                             className="bg-white/10 text-white border-white/20"
                           >
-                            {issue.service?.name}
+                            {serviceMap[issue.serviceId]?.name}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-gray-400 max-w-xs truncate">
@@ -539,51 +673,42 @@ function Issues() {
               </div>
             )}
 
-            {/* Pagination */}
             {issues.length > 0 && totalPages > 1 && (
               <div className="mt-4">
                 <Pagination>
                   <PaginationContent>
                     <PaginationItem>
                       <PaginationPrevious
-                        onClick={() =>
-                          setCurrentPage(Math.max(1, currentPage - 1))
-                        }
+                        onClick={handlePreviousPage}
                         className={`cursor-pointer bg-white/5 hover:bg-white/10 border-white/20 text-white ${
-                          currentPage === 1
+                          isPreviousDisabled
                             ? "opacity-50 cursor-not-allowed"
                             : ""
                         }`}
                       />
                     </PaginationItem>
 
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                      (page) => (
-                        <PaginationItem key={page}>
-                          <PaginationLink
-                            onClick={() => setCurrentPage(page)}
-                            isActive={currentPage === page}
-                            className={`cursor-pointer ${
-                              currentPage === page
-                                ? "bg-white/20 text-white"
-                                : "bg-white/5 hover:bg-white/10 text-gray-400"
-                            } border-white/20`}
-                          >
-                            {page}
-                          </PaginationLink>
-                        </PaginationItem>
-                      )
-                    )}
+                    {paginationPages.map((page) => (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          onClick={() => handlePageChange(page)}
+                          isActive={currentPage === page}
+                          className={`cursor-pointer ${
+                            currentPage === page
+                              ? "bg-white/20 text-white"
+                              : "bg-white/5 hover:bg-white/10 text-gray-400"
+                          } border-white/20`}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
 
                     <PaginationItem>
                       <PaginationNext
-                        onClick={() =>
-                          setCurrentPage(Math.min(totalPages, currentPage + 1))
-                        }
+                        onClick={handleNextPage}
                         className={`cursor-pointer bg-white/5 hover:bg-white/10 border-white/20 text-white ${
-                          currentPage === totalPages
-                            ? "opacity-50 cursor-not-allowed"
-                            : ""
+                          isNextDisabled ? "opacity-50 cursor-not-allowed" : ""
                         }`}
                       />
                     </PaginationItem>
@@ -594,7 +719,6 @@ function Issues() {
           </CardContent>
         </div>
 
-        {/* Edit Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="bg-neutral-900 backdrop-blur-xl border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -617,9 +741,7 @@ function Issues() {
                   <Input
                     id="edit-name"
                     value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
+                    onChange={handleFormNameChange}
                     className="bg-white/5 border-white/10 text-white"
                   />
                 </div>
@@ -632,9 +754,7 @@ function Issues() {
                   </Label>
                   <Select
                     value={formData.serviceId}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, serviceId: value })
-                    }
+                    onValueChange={handleFormServiceChange}
                   >
                     <SelectTrigger className="bg-white/5 border-white/10 text-white">
                       <SelectValue />
@@ -663,9 +783,7 @@ function Issues() {
                 <Input
                   id="edit-description"
                   value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
+                  onChange={handleFormDescriptionChange}
                   className="bg-white/5 border-white/10 text-white"
                 />
               </div>
@@ -679,9 +797,7 @@ function Issues() {
                 <Textarea
                   id="edit-solutions"
                   value={formData.solutions}
-                  onChange={(e) =>
-                    setFormData({ ...formData, solutions: e.target.value })
-                  }
+                  onChange={handleFormSolutionsChange}
                   className="min-h-[120px] bg-white/5 border-white/10 text-white"
                 />
               </div>
@@ -704,7 +820,6 @@ function Issues() {
           </DialogContent>
         </Dialog>
 
-        {/* Delete Alert Dialog */}
         <AlertDialog
           open={isDeleteDialogOpen}
           onOpenChange={setIsDeleteDialogOpen}
