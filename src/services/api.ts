@@ -1,4 +1,4 @@
-const GATEWAY_URL = "http://localhost:5001/gateway";
+const GATEWAY_URL = "https://zipp-bot-gateway.vercel.app/gateway";
 
 const gatewayRequest = async (
   method: string,
