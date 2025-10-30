@@ -185,7 +185,7 @@ function Issues() {
 
   const createIssue = useCallback(async () => {
     if (!user?.id) return;
-
+    setLoading(true)
     try {
       const solutionsData = parseSolutions(formData.solutions);
       await commonIssuesAPI.create(user.id, {
@@ -205,7 +205,7 @@ function Issues() {
 
   const updateIssue = useCallback(async () => {
     if (!selectedIssue || !user?.id) return;
-
+    setLoading(true)
     try {
       const solutionsData = parseSolutions(formData.solutions);
       await commonIssuesAPI.update(user.id, selectedIssue.id, {
@@ -225,7 +225,7 @@ function Issues() {
 
   const deleteIssue = useCallback(async () => {
     if (!selectedIssue || !user?.id) return;
-
+    setLoading(true)
     try {
       await commonIssuesAPI.delete(user.id, selectedIssue.id);
       setIsDeleteDialogOpen(false);

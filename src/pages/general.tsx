@@ -61,7 +61,7 @@ function General() {
 
   const createOrUpdateCompany = useCallback(async () => {
     if (!user?.id) return;
-
+    setDataLoading(true)
     try {
       if (company) {
         await companyAPI.update(user.id, company.id, companyForm);

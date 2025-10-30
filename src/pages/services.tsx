@@ -141,7 +141,7 @@ function Services() {
 
   const createService = useCallback(async () => {
     if (!user?.id) return;
-
+    setLoading(true)
     try {
       await servicesAPI.create(user.id, {
         ...formData,
@@ -163,7 +163,7 @@ function Services() {
 
   const updateService = useCallback(async () => {
     if (!selectedService || !user?.id) return;
-
+    setLoading(true)
     try {
       await servicesAPI.update(user.id, selectedService.id, {
         name: formData.name,
@@ -187,7 +187,7 @@ function Services() {
 
   const deleteService = useCallback(async () => {
     if (!selectedService || !user?.id) return;
-
+    setLoading(true)
     try {
       await servicesAPI.delete(user.id, selectedService.id);
       setIsDeleteDialogOpen(false);

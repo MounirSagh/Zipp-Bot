@@ -110,7 +110,7 @@ function Departments() {
 
   const createDepartment = useCallback(async () => {
     if (!user?.id) return;
-
+    setLoading(true)
     try {
       await departmentsAPI.create(user.id, {
         ...formData,
@@ -127,7 +127,7 @@ function Departments() {
 
   const updateDepartment = useCallback(async () => {
     if (!selectedDepartment || !user?.id) return;
-
+    setLoading(true)
     try {
       await departmentsAPI.update(user.id, selectedDepartment.id, {
         name: formData.name,
@@ -145,7 +145,7 @@ function Departments() {
 
   const deleteDepartment = useCallback(async () => {
     if (!selectedDepartment || !user?.id) return;
-
+    setLoading(true)
     try {
       await departmentsAPI.delete(user.id, selectedDepartment.id);
       setIsDeleteDialogOpen(false);
