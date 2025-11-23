@@ -22,6 +22,11 @@ function Landing() {
       <FAQSection />
       <ContactSection />
       <FooterSection />
+      <iframe
+        src="https://embed-orcin.vercel.app/embed"
+        className="fixed -bottom-72 right-4 w-80 h-96 rounded-lg shadow-lg  z-50"
+        allow="microphone *; camera *; autoplay *; encrypted-media *; fullscreen *"
+      ></iframe>
     </div>
   );
 }
