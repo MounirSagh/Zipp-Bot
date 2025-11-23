@@ -7,57 +7,54 @@ function Pricing() {
     "yearly"
   );
 
-  const plans = [
-    {
-      name: "Start",
-      description: "Ideal for individuals managing personal crypto finances.",
-      price: billingCycle === "yearly" ? 15 : 18,
-      badge: null,
-      features: [
-        "Up to 5 wallets",
-        "Basic portfolio tracking",
-        "Transaction history overview",
-        "Support 24/7",
-      ],
-      buttonText: "UPGRADE TO START",
-      buttonVariant: "outline",
-      trial: "7 days free",
-    },
-    {
-      name: "Growth",
-      description:
-        "Built for traders and small businesses scaling their web3 operations.",
-      price: billingCycle === "yearly" ? 39 : 47,
-      badge: "best choice",
-      features: [
-        "Everything in Start",
-        "Unlimited wallets",
-        "Advanced portfolio insights",
-        "Multi-chain support",
-        "Priority customer support 24/7",
-      ],
-      buttonText: "UPGRADE TO GROWTH",
-      buttonVariant: "primary",
-      trial: "7 days free",
-    },
-    {
-      name: "Enterprise",
-      description: "Perfect for web3 builders, companies and financial teams.",
-      price: null,
-      badge: null,
-      features: [
-        "Everything in Growth",
-        "Dedicated account manager",
-        "API access for custom integrations",
-        "Multi-user permissions",
-        "SLA-backed 24/7 support",
-        "Compliance and audit reports",
-      ],
-      buttonText: "CONTACT US",
-      buttonVariant: "outline",
-      trial: "Individual",
-    },
-  ];
+const plans = [
+  {
+    name: "Start",
+    description: "Perfect for small businesses automating their first customer support calls.",
+    price: billingCycle === "yearly" ? 950 : 1000,
+    badge: null,
+    features: [
+      "Up to 300 automated calls/month",
+      "Basic knowledge base",
+      "Standard support",
+    ],
+    buttonText: "UPGRADE TO START",
+    buttonVariant: "outline",
+  },
+  {
+    name: "Growth",
+    description:
+      "Ideal for scaling teams that need multi-department routing and higher call volume.",
+    price: billingCycle === "yearly" ? 1700 : 2000,
+    badge: "best choice",
+    features: [
+      "Everything in Start",
+      "Advanced RAG knowledge base",
+      "Real-time call routing & escalation",
+      "Up to 2000 automated calls/month",
+      "Call summaries & transcripts",
+      "Priority support",
+    ],
+    buttonText: "UPGRADE TO GROWTH",
+    buttonVariant: "primary",
+  },
+  {
+    name: "Enterprise",
+    description: "For large businesses needing custom integrations, compliance, and scale.",
+    price: null,
+    badge: null,
+    features: [
+      "Everything in Growth",
+      "Unlimited call volume",
+      "Dedicated onboarding engineer",
+      "Custom SLAs (99.9% uptime)",
+      "Call summaries & transcripts",
+      "Advanced analytics & compliance reports",
+    ],
+    buttonText: "CONTACT US",
+    buttonVariant: "outline",
+  },
+];
 
   return (
     <div className="mt-10 relative min-h-screen text-white py-20 px-4 overflow-hidden">
@@ -175,11 +172,6 @@ function Pricing() {
                 >
                   {plan.buttonText}
                 </button>
-
-                {/* Trial info */}
-                <div className="text-center text-sm text-purple-200/70 mt-4">
-                  {plan.trial}
-                </div>
               </div>
             </div>
           ))}
