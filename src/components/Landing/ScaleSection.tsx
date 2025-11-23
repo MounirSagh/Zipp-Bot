@@ -1,8 +1,9 @@
 import { Users, Zap, Shield } from "lucide-react";
 import { motion } from "framer-motion";
-// import bgvideo from "../../assets/bg2-zip.mp4";
-const bgvideo = "/videos/bg2-zip.mp4";
 import DottedGlowBackground from "../ui/dotted-glow-background";
+import { getCloudinaryVideoUrl, VIDEO_IDS } from "@/utils/cloudinary";
+
+const bgvideo = getCloudinaryVideoUrl(VIDEO_IDS.bg2Zip);
 
 function ScaleSection() {
   const features = [

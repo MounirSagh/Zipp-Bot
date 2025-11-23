@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
-// import bgVideo from "../../assets/bg3-zip.mp4";
-const bgVideo = "/videos/bg3-zip.mp4";
+import { getCloudinaryVideoUrl, VIDEO_IDS } from "@/utils/cloudinary";
+
+const bgVideo = getCloudinaryVideoUrl(VIDEO_IDS.bg3Zip);
 
 function AdaptSection() {
   return (
