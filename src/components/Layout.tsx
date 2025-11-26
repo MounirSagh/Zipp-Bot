@@ -7,7 +7,7 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative min-h-screen">
-        <SidebarProvider>
+      <SidebarProvider>
         <AppSidebar className="mx-4 py-3" />
         <SidebarInset>
           <Navbar />

@@ -24,6 +24,8 @@ import {
   HandHelping,
   Home,
   LayoutDashboard,
+  Ticket,
+  Users,
 } from "lucide-react";
 import { useClerk } from "@clerk/clerk-react";
 
@@ -53,6 +55,16 @@ const mainNavItems = [
     label: "Common Issues",
     icon: ClipboardList,
   },
+  {
+    path: "/WjN2Y1hMTk5saEFneUZZeWZScW1uUjVkRkJoU0E9PQ/customers",
+    label: "Customers",
+    icon: Users,
+  },
+  {
+    path: "/WjN2Y1hMTk5saEFneUZZeWZScW1uUjVkRkJoU0E9PQ/tickets",
+    label: "Tickets",
+    icon: Ticket,
+  }
 ];
 
 function SidebarNavItem({
@@ -78,7 +90,6 @@ function SidebarNavItem({
     </SidebarMenuItem>
   );
 }
-
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { state } = useSidebar();
