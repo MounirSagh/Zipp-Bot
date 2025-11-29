@@ -13,7 +13,7 @@ function Landing() {
   return (
     <div className="bg-white min-h-screen">
       <Navbar />
-      <div className="border max-w-[1200px] mx-auto px-4 sm:px-6 md:px-9 mt-6 md:mt-18 border-neutral-300 relative z-0">
+      <div className="border max-w-[1500px] mx-auto px-4 sm:px-6 md:px-9 mt-6 md:mt-18 border-neutral-300 relative z-0">
         <Hero />
         {/* <InternationalSection /> */}
         <IntelligentSection />

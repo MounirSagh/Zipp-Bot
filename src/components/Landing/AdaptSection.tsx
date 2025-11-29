@@ -32,7 +32,7 @@ function AdaptSection() {
             </p>
           </div>
           <div className="flex items-center justify-center text-center leading-relaxed mx-auto lg:col-span-2">
-            <ContainerScroll titleComponent={<></>}>
+            <ContainerScroll>
               <img
                 src={dashboard}
                 alt="hero"
