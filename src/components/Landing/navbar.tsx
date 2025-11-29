@@ -45,7 +45,7 @@ function Navbar() {
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
           ? "backdrop-blur-xl bg-whtie border-b border-neutral-300 px-40"
-          : "bg-transparent  border-b border-neutral-300 mx-40"
+          : "bg-transparent  mx-40"
       }`}
     >
       <div className="container mx-auto">
@@ -181,7 +181,7 @@ function Navbar() {
                 <a
                   key={index}
                   href={link.href}
-                  className="block text-black hover:text-purple-300 transition-colors duration-300 py-2 px-3 rounded-lg hover:bg-white/5"
+                  className="block text-black hover:text-neutral-700 transition-colors duration-300 py-2 px-3 rounded-lg hover:bg-white/5"
                   onClick={() => setIsOpen(false)}
                 >
                   {link.name}
@@ -189,10 +189,10 @@ function Navbar() {
               )
             )}
             <div className="pt-4 space-y-3 border-t border-white/10">
-              <button className="w-full px-5 py-2 text-black hover:text-purple-300 transition-colors duration-300">
+              <button className="w-full px-5 py-2 text-black hover:text-neutral-700 transition-colors duration-300">
                 Sign In
               </button>
-              <button className="w-full px-5 py-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 rounded-xl font-semibold text-black shadow-lg shadow-purple-500/30">
+              <button className="w-full px-5 py-3 bg-black hover:bg-neutral-700 rounded-xl font-semibold text-white">
                 Get Started
               </button>
             </div>

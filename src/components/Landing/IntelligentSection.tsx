@@ -27,7 +27,7 @@ function IntelligentSection() {
   return (
     <div
       id="intelligent"
-      className="relative h-full bg-white overflow-hidden py-24  border-b border-neutral-800"
+      className="relative h-full bg-white overflow-hidden py-24  border-b border-neutral-200"
     >
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center h-full">
