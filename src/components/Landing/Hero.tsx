@@ -2,7 +2,6 @@ import { ArrowRight, Play } from "lucide-react";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { SignIn } from "@clerk/clerk-react";
-import GradientBlinds from "../GradientBlinds";
 import PixelBlast from "../PixelBlast";
 
 
