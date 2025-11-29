@@ -1,85 +1,48 @@
-import { motion } from "framer-motion";
-import { getCloudinaryVideoUrl, VIDEO_IDS } from "@/utils/cloudinary";
-
-const bgVideo = getCloudinaryVideoUrl(VIDEO_IDS.bg3Zip);
+import { ContainerScroll } from "../ui/container-scroll-animation";
+import dashboard from "../../../public/images/Screenshot 2025-11-29 at 00.14.15.png";
 
 function AdaptSection() {
   return (
-    <div id="adapt" className="relative h-full bg-black overflow-hidden">
+    <div
+      id="adapt"
+      className="relative h-full bg-white overflow-hidden border-b border-neutral-200 text-black"
+    >
       <div className="absolute inset-0">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-50"
-        >
-          <source src={bgVideo} type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-black/40" />
+        {/* Enhanced grid: lighter, finer, and more modern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000010_1px,transparent_1px),linear-gradient(to_bottom,#00000010_1px,transparent_1px)] bg-[size:2rem_2rem]" />
+        {/* Soft overlay for depth */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/60 to-transparent" />
       </div>
 
       <div className="container mx-auto px-6 py-24 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="space-y-8"
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              viewport={{ once: true }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-xl border border-white/20 shadow-lg shadow-purple-500/10"
-            >
-              <span className="text-sm text-slate-300 font-medium">Adapt</span>
-            </motion.div>
+          <div className="space-y-8 text-center lg:col-span-2">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black backdrop-blur-xl border border-neutral-200 shadow-lg shadow-purple-500/10">
+              <span className="text-sm text-white font-medium">Adapt</span>
+            </div>
 
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              viewport={{ once: true }}
-              className="text-5xl lg:text-6xl font-light leading-tight tracking-tight"
-            >
-              <span className="block text-orange-100">
-                Configure your AI to{" "}
-              </span>
-              <span className="block text-orange-50">know your business</span>
-            </motion.h2>
+            <h2 className="text-5xl lg:text-6xl font-light leading-tight tracking-tight">
+              <span className="block text-black">Configure The Agent to </span>
+              <span className="block text-black">Know Your Business</span>
+            </h2>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              viewport={{ once: true }}
-              className="text-base md:text-lg text-gray-300 leading-relaxed max-w-xl font-light"
-            >
-              Feed your unique knowledge directly into ZIpp. The AI learns,
+            <p className="text-base md:text-lg text-neutral-800 leading-relaxed max-w-xl mx-auto font-light">
+              Feed your unique knowledge directly into Zipp. The AI learns,
               grows, and becomes an extension of your team.
-            </motion.p>
-
-            {/* <motion.button
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              viewport={{ once: true }}
-              className="group px-8 py-3 bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/20 font-normal text-white text-sm transition-all duration-300 flex items-center gap-2 rounded-4xl"
-            >
-              Details
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </motion.button> */}
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="relative group"
-          ></motion.div>
+            </p>
+          </div>
+          <div className="flex items-center justify-center text-center leading-relaxed mx-auto lg:col-span-2">
+            <ContainerScroll titleComponent={<></>}>
+              <img
+                src={dashboard}
+                alt="hero"
+                height={720}
+                width={1400}
+                className="object-cover h-full object-left-top"
+                draggable={false}
+              />
+            </ContainerScroll>
+          </div>
         </div>
       </div>
     </div>

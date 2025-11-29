@@ -11,7 +11,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <AppSidebar className="mx-4 py-3" />
         <SidebarInset>
           <Navbar />
-          <main className="p-6 min-h-screen w-full backdrop-blur-3xl bg-gradient-to-b from-neutral-800 to-purple-950/10">
+          <main className="p-6 min-h-screen w-full backdrop-blur-3xl bg-white">
             {children}
             <SpeedInsights />
           </main>

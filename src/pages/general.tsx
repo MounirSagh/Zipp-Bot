@@ -135,10 +135,10 @@ function General() {
     <Layout>
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-white">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
             General
           </h1>
-          <p className="text-gray-400">
+          <p className="text-gray-600">
             Manage your company profile and search through your knowledge base
           </p>
         </div>
@@ -149,21 +149,21 @@ function General() {
               placeholder="Search your knowledge base"
               value={searchQuery}
               onChange={handleSearchQueryChange}
-              className="flex-1 bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+              className="flex-1 bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             />
             <Button
               onClick={handleSearch}
               disabled={isSearchDisabled}
-              className="gap-2 bg-white/10 hover:bg-white/20 text-white disabled:bg-white/5 disabled:text-gray-600"
+              className="gap-2 bg-blue-900/60 hover:bg-blue-900/70 text-white disabled:bg-gray-200 disabled:text-gray-400"
             >
               <Search className="w-4 h-4" />
               {loading ? "Searching..." : "Search"}
             </Button>
           </div>
           {!company && (
-            <div className="text-center py-8 border border-dashed border-white/10 rounded-lg bg-white/5">
-              <p className="text-gray-400">
+            <div className="text-center py-8 border border-dashed border-gray-300 rounded-lg bg-gray-50">
+              <p className="text-gray-600">
                 Please create a company profile first to enable knowledge base
                 search.
               </p>
@@ -174,12 +174,12 @@ function General() {
           {formattedSearchResults.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-medium text-white">
+                <h3 className="text-lg font-medium text-gray-900">
                   Search Results
                 </h3>
                 <Badge
                   variant="outline"
-                  className="bg-white/10 text-white border-white/20"
+                  className="bg-blue-50 text-blue-900/60 border-blue-200"
                 >
                   {formattedSearchResults.length} found
                 </Badge>
@@ -188,32 +188,32 @@ function General() {
                 {formattedSearchResults.map((result: any, index: number) => (
                   <Card
                     key={index}
-                    className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all duration-300"
+                    className="bg-white border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-300"
                   >
                     <CardContent className="pt-6">
                       <div className="flex items-center justify-between mb-3">
                         <Badge
                           variant="secondary"
-                          className="text-xs bg-white/10 text-white border-white/20"
+                          className="text-xs bg-gray-100 text-gray-700 border-gray-200"
                         >
                           {result.type}
                         </Badge>
                         <Badge
                           variant="outline"
-                          className="text-xs bg-white/10 text-white border-white/20"
+                          className="text-xs bg-green-50 text-green-700 border-green-200"
                         >
                           {result.matchPercentage}% match
                         </Badge>
                       </div>
-                      <h4 className="font-semibold mb-2 text-white">
+                      <h4 className="font-semibold mb-2 text-gray-900">
                         {result.title}
                       </h4>
-                      <p className="text-gray-400 text-sm mb-2">
+                      <p className="text-gray-600 text-sm mb-2">
                         {result.description}
                       </p>
                       {result.solutions && (
-                        <p className="text-sm text-gray-500">
-                          <span className="font-medium text-gray-400">
+                        <p className="text-sm text-gray-600">
+                          <span className="font-medium text-gray-700">
                             Solutions:
                           </span>{" "}
                           {result.solutions}
@@ -227,10 +227,10 @@ function General() {
           )}
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <div>
-              <CardTitle className="text-xl text-white">
+              <CardTitle className="text-xl text-gray-900">
                 Company Information
               </CardTitle>
-              <CardDescription className="text-gray-400">
+              <CardDescription className="text-gray-600">
                 Manage your company details and business information
               </CardDescription>
             </div>
@@ -238,7 +238,7 @@ function General() {
               onClick={handleToggleEditForm}
               variant={showEditForm ? "outline" : "default"}
               size="sm"
-              className="gap-2 bg-white/10 hover:bg-white/20 border-white/20 text-white"
+              className="gap-2 bg-blue-900/60 hover:bg-blue-900/70 border-gray-200 text-white"
             >
               {showEditForm ? (
                 "Cancel"
@@ -257,10 +257,10 @@ function General() {
 
           <CardContent>
             {showEditForm ? (
-              <div className="space-y-6 p-6 bg-neutral-900 border border-white/10 rounded-lg">
+              <div className="space-y-6 p-6 bg-gray-50 border border-gray-200 rounded-lg">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-white">
+                    <label className="text-sm font-medium text-gray-900">
                       Company Name
                     </label>
                     <Input
@@ -269,11 +269,11 @@ function General() {
                       onChange={(e) =>
                         handleEditFormChange("name", e.target.value)
                       }
-                      className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                      className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-white">
+                    <label className="text-sm font-medium text-gray-900">
                       Business Field
                     </label>
                     <Input
@@ -282,12 +282,12 @@ function General() {
                       onChange={(e) =>
                         handleEditFormChange("field", e.target.value)
                       }
-                      className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                      className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-white">
+                  <label className="text-sm font-medium text-gray-900">
                     Company Description
                   </label>
                   <Input
@@ -296,12 +296,12 @@ function General() {
                     onChange={(e) =>
                       handleEditFormChange("description", e.target.value)
                     }
-                    className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                    className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
                   />
                 </div>
                 <Button
                   onClick={createOrUpdateCompany}
-                  className="gap-2 bg-white/10 hover:bg-white/20 text-white"
+                  className="gap-2 bg-blue-900/60 hover:bg-blue-900/70 text-white"
                 >
                   {company ? "Update Profile" : "Create Profile"}
                 </Button>
@@ -310,38 +310,38 @@ function General() {
               <div className="space-y-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-4 ">
-                    <h3 className="text-2xl font-semibold text-white">
+                    <h3 className="text-2xl font-semibold text-gray-900">
                       {company.name}
                     </h3>
                     <Badge
                       variant="secondary"
-                      className="w-fit bg-white/10 text-white border-white/20"
+                      className="w-fit bg-blue-900/10 text-blue-900/60 border-blue-100"
                     >
                       {company.field}
                     </Badge>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-400 bg-white/5 px-3 py-2 rounded-md border border-white/10">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-md border border-gray-200">
                     <Users className="w-4 h-4" />
                     {company.departments.length} departments
                   </div>
                 </div>
-                <Separator className="bg-white/10" />
+                <Separator className="bg-gray-200" />
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-gray-400">
+                  <h4 className="text-sm font-medium text-gray-700">
                     Description
                   </h4>
-                  <p className="text-white leading-relaxed">
+                  <p className="text-gray-900 leading-relaxed">
                     {company.description}
                   </p>
                 </div>
               </div>
             ) : (
-              <div className="text-center py-16 border-2 border-dashed border-white/10 rounded-lg">
+              <div className="text-center py-16 border-2 border-dashed border-gray-300 rounded-lg">
                 <div className="space-y-3">
-                  <h3 className="text-lg font-medium text-gray-400">
+                  <h3 className="text-lg font-medium text-gray-700">
                     No Company Profile
                   </h3>
-                  <p className="text-sm text-gray-500 max-w-md mx-auto">
+                  <p className="text-sm text-gray-600 max-w-md mx-auto">
                     Create your company profile to get started with managing
                     your business information and departments.
                   </p>

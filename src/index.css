@@ -52,7 +52,7 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(0.145 0 0);
+  --background: lab(100% 0.01 -0.01);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
@@ -123,11 +123,18 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* Light mode: white background with dark text */
   body {
-    @apply bg-transparent text-white;
+    @apply bg-white text-black;
   }
+  /* Keep the page container transparent so body controls background */
   html {
-    @apply bg-neutral-900;
+    @apply bg-transparent;
+  }
+
+  /* Dark mode override: keep existing dark theme but ensure background is applied */
+  .dark body {
+    @apply bg-neutral-900 text-white;
   }
 
   /* Override sidebar backgrounds for glassmorphism
@@ -167,7 +174,6 @@
   html {
     scroll-behavior: smooth;
   }
-
 
   /* Glassmorphic animations */
   @keyframes blob {

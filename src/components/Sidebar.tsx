@@ -64,7 +64,7 @@ const mainNavItems = [
     path: "/WjN2Y1hMTk5saEFneUZZeWZScW1uUjVkRkJoU0E9PQ/tickets",
     label: "Tickets",
     icon: Ticket,
-  }
+  },
 ];
 
 function SidebarNavItem({
@@ -96,7 +96,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { signOut } = useClerk();
   return (
     <Sidebar collapsible="icon" {...props} className="">
-      <SidebarHeader className="border-b border-white/10 backdrop-blur-md text-white">
+      <SidebarHeader className="border-b backdrop-blur-md text-gray-900 bg-white border-r border-neutral-300">
         <div className="flex items-center justify-center py-1.5">
           <div
             className={cn(
@@ -106,7 +106,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           >
             <div className="flex items-center gap-1">
               <h1
-                className="text-2xl font-bold text-white"
+                className="text-2xl font-bold text-gray-900"
                 style={{ fontFamily: "'Major Mono Display', monospace" }}
               >
                 Zipp
@@ -116,13 +116,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="backdrop-blur-3xl bg-gradient-to-b from- via-neutral-900 to-purple-950/15">
+      <SidebarContent className="backdrop-blur-3xl bg-white border-r border-neutral-300">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-gray-300">
+          <SidebarGroupLabel className="text-gray-600">
             Main Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1 text-white">
+            <SidebarMenu className="space-y-1 text-gray-800">
               {mainNavItems.map((item) => (
                 <SidebarNavItem key={item.path} {...item} />
               ))}
@@ -130,11 +130,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className=" backdrop-blur-md  border-white/10 bg-purple-950/15">
+      <SidebarFooter className="backdrop-blur-md border border-neutral-300 bg-white ">
         <Button
           onClick={() => signOut()}
           variant="outline"
-          className="w-full text-white backdrop-blur-sm border-white/20 hover:bg-white/20"
+          className="w-full text-white backdrop-blur-sm border-gray-200 bg-black hover:bg-gray-100"
         >
           Logout
         </Button>

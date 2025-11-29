@@ -284,26 +284,26 @@ function Customers() {
       <div className="w-full space-y-6">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight text-white">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
               Customers
             </h1>
-            <p className="text-gray-400">
+            <p className="text-gray-600">
               Manage your customer database and contact information
             </p>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="gap-2 bg-white/10 hover:bg-white/20 border-white/20 text-white">
+              <Button className="gap-2 bg-blue-900/60 hover:bg-blue-900/70 border-blue-800/20 text-white">
                 <Plus className="w-4 h-4" />
                 Add Customer
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-neutral-900 backdrop-blur-xl border-white/10 max-w-2xl">
+            <DialogContent className="bg-white border-gray-200 max-w-2xl">
               <DialogHeader>
-                <DialogTitle className="text-white">
+                <DialogTitle className="text-gray-900">
                   Add New Customer
                 </DialogTitle>
-                <DialogDescription className="text-gray-400">
+                <DialogDescription className="text-gray-600">
                   Create a new customer profile for your organization.
                 </DialogDescription>
               </DialogHeader>
@@ -312,7 +312,7 @@ function Customers() {
                   <div className="space-y-2">
                     <Label
                       htmlFor="add-first-name"
-                      className="text-sm font-medium text-white"
+                      className="text-sm font-medium text-gray-900"
                     >
                       First Name
                     </Label>
@@ -326,13 +326,13 @@ function Customers() {
                           first_name: e.target.value,
                         }))
                       }
-                      className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                      className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label
                       htmlFor="add-last-name"
-                      className="text-sm font-medium text-white"
+                      className="text-sm font-medium text-gray-900"
                     >
                       Last Name
                     </Label>
@@ -346,13 +346,13 @@ function Customers() {
                           last_name: e.target.value,
                         }))
                       }
-                      className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                      className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label
                       htmlFor="add-email"
-                      className="text-sm font-medium text-white"
+                      className="text-sm font-medium text-gray-900"
                     >
                       Email
                     </Label>
@@ -367,13 +367,13 @@ function Customers() {
                           email: e.target.value,
                         }))
                       }
-                      className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                      className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label
                       htmlFor="add-phone"
-                      className="text-sm font-medium text-white"
+                      className="text-sm font-medium text-gray-900"
                     >
                       Phone Number
                     </Label>
@@ -387,13 +387,13 @@ function Customers() {
                           phone_number: e.target.value,
                         }))
                       }
-                      className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                      className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label
                       htmlFor="add-country"
-                      className="text-sm font-medium text-white"
+                      className="text-sm font-medium text-gray-900"
                     >
                       Country
                     </Label>
@@ -407,13 +407,13 @@ function Customers() {
                           country: e.target.value,
                         }))
                       }
-                      className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                      className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label
                       htmlFor="add-city"
-                      className="text-sm font-medium text-white"
+                      className="text-sm font-medium text-gray-900"
                     >
                       City
                     </Label>
@@ -427,13 +427,13 @@ function Customers() {
                           city: e.target.value,
                         }))
                       }
-                      className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                      className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label
                       htmlFor="add-cin"
-                      className="text-sm font-medium text-white"
+                      className="text-sm font-medium text-gray-900"
                     >
                       CIN
                     </Label>
@@ -447,13 +447,13 @@ function Customers() {
                           cin: e.target.value,
                         }))
                       }
-                      className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                      className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label
                       htmlFor="add-key"
-                      className="text-sm font-medium text-white"
+                      className="text-sm font-medium text-gray-900"
                     >
                       Key
                     </Label>
@@ -467,7 +467,7 @@ function Customers() {
                           key: e.target.value,
                         }))
                       }
-                      className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                      className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
                 </div>
@@ -476,13 +476,13 @@ function Customers() {
                 <Button
                   variant="outline"
                   onClick={handleAddDialogClose}
-                  className="bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                  className="bg-white hover:bg-gray-50 border-gray-200 text-gray-900"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={createCustomer}
-                  className="bg-white/10 hover:bg-white/20 text-white"
+                  className="bg-blue-900/60 hover:bg-blue-900/70 text-white"
                 >
                   Create Customer
                 </Button>
@@ -491,15 +491,15 @@ function Customers() {
           </Dialog>
         </div>
 
-        <div className="bg-transparent border-white/10">
+        <div className="bg-transparent border-gray-200">
           <CardContent>
             {customers.length === 0 ? (
-              <div className="text-center py-12 border-2 border-dashed border-white/10 rounded-lg">
+              <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
                 <div className="space-y-3">
-                  <h3 className="text-lg font-medium text-gray-400">
+                  <h3 className="text-lg font-medium text-gray-700">
                     No Customers Found
                   </h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Create your first customer to start managing your customer
                     database.
                   </p>
@@ -508,13 +508,13 @@ function Customers() {
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow className="border-white/10 hover:bg-white/5">
-                    <TableHead className="text-gray-400">Name</TableHead>
-                    <TableHead className="text-gray-400">Contact</TableHead>
-                    <TableHead className="text-gray-400">Location</TableHead>
-                    <TableHead className="text-gray-400">CIN</TableHead>
-                    <TableHead className="text-gray-400">Tickets</TableHead>
-                    <TableHead className="text-right text-gray-400">
+                  <TableRow className="border-gray-200 hover:bg-gray-50">
+                    <TableHead className="text-gray-700">Name</TableHead>
+                    <TableHead className="text-gray-700">Contact</TableHead>
+                    <TableHead className="text-gray-700">Location</TableHead>
+                    <TableHead className="text-gray-700">CIN</TableHead>
+                    <TableHead className="text-gray-700">Tickets</TableHead>
+                    <TableHead className="text-right text-gray-700">
                       Actions
                     </TableHead>
                   </TableRow>
@@ -523,15 +523,15 @@ function Customers() {
                   {customers.map((customer) => (
                     <TableRow
                       key={customer.id}
-                      className="border-white/10 hover:bg-white/5"
+                      className="border-gray-200 hover:bg-gray-50"
                     >
-                      <TableCell className="font-medium text-white">
+                      <TableCell className="font-medium text-gray-900">
                         <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-gray-400" />
+                          <User className="w-4 h-4 text-gray-500" />
                           {customer.first_name} {customer.last_name}
                         </div>
                       </TableCell>
-                      <TableCell className="text-gray-400">
+                      <TableCell className="text-gray-600">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 text-sm">
                             <Mail className="w-3 h-3" />
@@ -543,19 +543,19 @@ function Customers() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-gray-400">
+                      <TableCell className="text-gray-600">
                         <div className="flex items-center gap-2">
                           <MapPin className="w-4 h-4" />
                           {customer.city}, {customer.country}
                         </div>
                       </TableCell>
-                      <TableCell className="text-gray-400">
+                      <TableCell className="text-gray-600">
                         {customer.cin}
                       </TableCell>
                       <TableCell>
                         <Badge
                           variant="secondary"
-                          className="bg-white/10 text-white border-white/20"
+                          className="bg-blue-50 text-blue-900/60 border-blue-900/5"
                         >
                           {customer.tickets?.length || 0} tickets
                         </Badge>
@@ -566,15 +566,15 @@ function Customers() {
                             onClick={() => openEditDialog(customer)}
                             variant="outline"
                             size="sm"
-                            className="gap-2 bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                            className="gap-2 bg-white hover:bg-gray-50 border-gray-200"
                           >
-                            <Edit2 className="w-4 h-4" />
+                            <Edit2 className="w-4 h-4 text-gray-900" />
                           </Button>
                           <Button
                             onClick={() => openDeleteDialog(customer)}
                             variant="destructive"
                             size="sm"
-                            className="gap-2 bg-red-500/20 hover:bg-red-500/30 border-red-500/30 text-red-400"
+                            className="gap-2 bg-red-50 hover:bg-red-100 border-red-200 text-red-600"
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -593,7 +593,7 @@ function Customers() {
                     <PaginationItem>
                       <PaginationPrevious
                         onClick={handlePreviousPage}
-                        className={`cursor-pointer bg-white/5 hover:bg-white/10 border-white/20 text-white ${
+                        className={`cursor-pointer bg-white hover:bg-gray-50 border-gray-200 text-gray-900 ${
                           isPreviousDisabled
                             ? "opacity-50 cursor-not-allowed"
                             : ""
@@ -608,9 +608,9 @@ function Customers() {
                           isActive={currentPage === page}
                           className={`cursor-pointer ${
                             currentPage === page
-                              ? "bg-white/20 text-white"
-                              : "bg-white/5 hover:bg-white/10 text-gray-400"
-                          } border-white/20`}
+                              ? "bg-blue-900/60 text-white"
+                              : "bg-white hover:bg-gray-50 text-gray-700"
+                          } border-gray-200`}
                         >
                           {page}
                         </PaginationLink>
@@ -620,7 +620,7 @@ function Customers() {
                     <PaginationItem>
                       <PaginationNext
                         onClick={handleNextPage}
-                        className={`cursor-pointer bg-white/5 hover:bg-white/10 border-white/20 text-white ${
+                        className={`cursor-pointer bg-white hover:bg-gray-50 border-gray-200 text-gray-900 ${
                           isNextDisabled ? "opacity-50 cursor-not-allowed" : ""
                         }`}
                       />
@@ -634,10 +634,10 @@ function Customers() {
 
         {/* Edit Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="bg-neutral-900 backdrop-blur-xl border-white/10 max-w-2xl">
+          <DialogContent className="bg-white border-gray-200 max-w-2xl">
             <DialogHeader>
-              <DialogTitle className="text-white">Edit Customer</DialogTitle>
-              <DialogDescription className="text-gray-400">
+              <DialogTitle className="text-gray-900">Edit Customer</DialogTitle>
+              <DialogDescription className="text-gray-600">
                 Update the customer information.
               </DialogDescription>
             </DialogHeader>
@@ -646,7 +646,7 @@ function Customers() {
                 <div className="space-y-2">
                   <Label
                     htmlFor="edit-first-name"
-                    className="text-sm font-medium text-white"
+                    className="text-sm font-medium text-gray-900"
                   >
                     First Name
                   </Label>
@@ -659,13 +659,13 @@ function Customers() {
                         first_name: e.target.value,
                       }))
                     }
-                    className="bg-white/5 border-white/10 text-white"
+                    className="bg-white border-gray-200 text-gray-900"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label
                     htmlFor="edit-last-name"
-                    className="text-sm font-medium text-white"
+                    className="text-sm font-medium text-gray-900"
                   >
                     Last Name
                   </Label>
@@ -678,13 +678,13 @@ function Customers() {
                         last_name: e.target.value,
                       }))
                     }
-                    className="bg-white/5 border-white/10 text-white"
+                    className="bg-white border-gray-200 text-gray-900"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label
                     htmlFor="edit-email"
-                    className="text-sm font-medium text-white"
+                    className="text-sm font-medium text-gray-900"
                   >
                     Email
                   </Label>
@@ -698,13 +698,13 @@ function Customers() {
                         email: e.target.value,
                       }))
                     }
-                    className="bg-white/5 border-white/10 text-white"
+                    className="bg-white border-gray-200 text-gray-900"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label
                     htmlFor="edit-phone"
-                    className="text-sm font-medium text-white"
+                    className="text-sm font-medium text-gray-900"
                   >
                     Phone Number
                   </Label>
@@ -717,13 +717,13 @@ function Customers() {
                         phone_number: e.target.value,
                       }))
                     }
-                    className="bg-white/5 border-white/10 text-white"
+                    className="bg-white border-gray-200 text-gray-900"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label
                     htmlFor="edit-country"
-                    className="text-sm font-medium text-white"
+                    className="text-sm font-medium text-gray-900"
                   >
                     Country
                   </Label>
@@ -736,13 +736,13 @@ function Customers() {
                         country: e.target.value,
                       }))
                     }
-                    className="bg-white/5 border-white/10 text-white"
+                    className="bg-white border-gray-200 text-gray-900"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label
                     htmlFor="edit-city"
-                    className="text-sm font-medium text-white"
+                    className="text-sm font-medium text-gray-900"
                   >
                     City
                   </Label>
@@ -752,13 +752,13 @@ function Customers() {
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, city: e.target.value }))
                     }
-                    className="bg-white/5 border-white/10 text-white"
+                    className="bg-white border-gray-200 text-gray-900"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label
                     htmlFor="edit-cin"
-                    className="text-sm font-medium text-white"
+                    className="text-sm font-medium text-gray-900"
                   >
                     CIN
                   </Label>
@@ -768,13 +768,13 @@ function Customers() {
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, cin: e.target.value }))
                     }
-                    className="bg-white/5 border-white/10 text-white"
+                    className="bg-white border-gray-200 text-gray-900"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label
                     htmlFor="edit-key"
-                    className="text-sm font-medium text-white"
+                    className="text-sm font-medium text-gray-900"
                   >
                     Key
                   </Label>
@@ -784,7 +784,7 @@ function Customers() {
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, key: e.target.value }))
                     }
-                    className="bg-white/5 border-white/10 text-white"
+                    className="bg-white border-gray-200 text-gray-900"
                   />
                 </div>
               </div>
@@ -793,13 +793,13 @@ function Customers() {
               <Button
                 variant="outline"
                 onClick={handleEditDialogClose}
-                className="bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                className="bg-white hover:bg-gray-50 border-gray-200 text-gray-900"
               >
                 Cancel
               </Button>
               <Button
                 onClick={updateCustomer}
-                className="bg-white/10 hover:bg-white/20 text-white"
+                className="bg-blue-900/60 hover:bg-blue-900/70 text-white"
               >
                 Save Changes
               </Button>
@@ -812,24 +812,24 @@ function Customers() {
           open={isDeleteDialogOpen}
           onOpenChange={setIsDeleteDialogOpen}
         >
-          <AlertDialogContent className="bg-neutral-900 backdrop-blur-xl border-white/10">
+          <AlertDialogContent className="bg-white border-gray-200">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-white">
+              <AlertDialogTitle className="text-gray-900">
                 Delete Customer
               </AlertDialogTitle>
-              <AlertDialogDescription className="text-gray-400">
+              <AlertDialogDescription className="text-gray-600">
                 Are you sure you want to delete "{selectedCustomer?.first_name}{" "}
                 {selectedCustomer?.last_name}"? This action cannot be undone and
                 will also remove all associated tickets.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel className="bg-white/5 hover:bg-white/10 border-white/20 text-white">
+              <AlertDialogCancel className="bg-white hover:bg-gray-50 border-gray-200 text-gray-900">
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={deleteCustomer}
-                className="bg-red-500/20 hover:bg-red-500/30 border-red-500/30 text-red-400"
+                className="bg-red-50 hover:bg-red-100 border-red-200 text-red-600"
               >
                 Delete Customer
               </AlertDialogAction>

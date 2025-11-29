@@ -10,12 +10,14 @@ import Company from "./pages/Common/company";
 import Pricing from "./pages/Common/pricing";
 import Customers from "./pages/customers";
 import Tickets from "./pages/tickets";
+import Test from "./pages/Common/Test";
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Landing />} />
+        <Route path="/" element={<Test />} />
+        {/* <Route path="/" element={<Landing />} /> */}
         <Route path="/company" element={<Company />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route

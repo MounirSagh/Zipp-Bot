@@ -1,114 +1,201 @@
-import { Users, Zap, Shield } from "lucide-react";
-import { motion } from "framer-motion";
-import DottedGlowBackground from "../ui/dotted-glow-background";
-import { getCloudinaryVideoUrl, VIDEO_IDS } from "@/utils/cloudinary";
+import {
+  Users,
+  Zap,
+  Shield,
+  Voicemail,
+  Languages,
+} from "lucide-react";
+import wave from "../../../public/images/wave.png";
+import english from "../../../public/images/languages/english.webp";
+import franch from "../../../public/images/languages/france.webp";
+import arabic from "../../../public/images/languages/morocco.svg";
+import spanish from "../../../public/images/languages/spain.png";
+import russian from "../../../public/images/languages/russia.svg";
+import german from "../../../public/images/languages/germany.png";
+import realtime from "../../../public/images/languages/realtime.png";
+import uptime from "../../../public/images/uptime-removebg-preview.png";
+import concurrent from "../../../public/images/load-removebg-preview.png";
 
-const bgvideo = getCloudinaryVideoUrl(VIDEO_IDS.bg2Zip);
+function NoiseTexture({ opacity = 0.4 }: { opacity?: number }) {
+  return (
+    <svg
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      style={{ opacity }}
+    >
+      <filter id="noise">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.8"
+          numOctaves="4"
+          stitchTiles="stitch"
+        />
+        <feColorMatrix type="saturate" values="0" />
+      </filter>
+      <rect width="100%" height="100%" filter="url(#noise)" />
+    </svg>
+  );
+}
+
+const features = [
+  {
+    icon: Users,
+    title: "Concurrent Calls",
+    description: "Handle massive call volumes without breaking a sweat",
+  },
+  {
+    icon: Zap,
+    title: "Real-time Processing",
+    description: "Instant responses with sub-second latency",
+  },
+  {
+    icon: Shield,
+    title: "Uptime",
+    description: "Enterprise-grade reliability you can count on",
+  },
+  {
+    icon: Voicemail,
+    title: "Voice API",
+    description:
+      "Natural, smooth, and empathetic AI conversations with only 500ms latency.",
+  },
+  {
+    icon: Languages,
+    title: "Multilingual Support",
+    description:
+      "Support 18+ languages, can dial to any countries phone numbers",
+  },
+];
+
+const languageFlags = [
+  { src: english, alt: "English", title: "English" },
+  { src: franch, alt: "French", title: "Français" },
+  { src: spanish, alt: "Spanish", title: "Español" },
+  { src: russian, alt: "Russian", title: "Русский" },
+  { src: german, alt: "German", title: "Deutsch" },
+  { src: arabic, alt: "Arabic", title: "العربية" },
+];
 
 function ScaleSection() {
-  const features = [
-    {
-      icon: Users,
-      title: "1000+ Concurrent Calls",
-      description: "Handle massive call volumes without breaking a sweat",
-    },
-    {
-      icon: Zap,
-      title: "Real-time Processing",
-      description: "Instant responses with sub-second latency",
-    },
-    {
-      icon: Shield,
-      title: "99.9% Uptime",
-      description: "Enterprise-grade reliability you can count on",
-    },
-  ];
-
   return (
     <div
       id="scale"
-      className="relative h-full bg-black overflow-hidden rounded-b-"
+      className="bg-white py-12 px-4 md:px-8 lg:px-12 pb-[100px] mb-[100px] border-b border-neutral-200"
     >
-      <div className="container mx-auto px-6 py-24 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="relative"
-          >
-            <div className="inset-0">
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="inset-0 w-full h-full object-cover"
-              >
-                <source src={bgvideo} type="video/mp4" />
-              </video>
+      <div className="max-w-7xl mx-auto">
+        <div className="space-y-4 mb-10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black backdrop-blur-xl border border-white/20 shadow-lg shadow-purple-500/10">
+            <span className="text-sm text-white font-medium">Scale</span>
+          </div>
+
+          <h2 className="text-5xl lg:text-6xl font-light leading-tight tracking-tight">
+            <span className="block text-black">
+              Beyond simple customer support
+            </span>
+          </h2>
+
+          <p className="text-base md:text-lg text-gray-800 leading-relaxed max-w-xl font-light">
+            Zipp transforms customer interactions with intelligent, adaptive
+            technology that never sleeps.
+          </p>
+        </div>
+
+        {/* Bento Grid Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-fr">
+          {/* 1000+ Concurrent Calls - Large Card (using features[0]) */}
+          <div className="md:col-span-2 lg:col-span-2  rounded-3xl bg-blue-800 p-8 relative overflow-hidden min-h-[320px]">
+            <NoiseTexture opacity={0.35} />
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-xl md:text-2xl font-semibold text-white">
+                  {features[0].title}
+                </h3>
+              </div>
+              <p className="text-white/80 text-sm max-w-xs">
+                {features[0].description}
+              </p>
             </div>
-          </motion.div>
+            <img className="absolute right-0 bottom-0 h-[77%]" src={concurrent} />
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            viewport={{ once: true }}
-            className="space-y-8"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-xl border border-white/20 shadow-lg shadow-purple-500/10">
-              <span className="text-sm text-slate-300 font-medium">Scale</span>
+
+          {/* Voice API Card (using features[3]) */}
+          <div className="rounded-3xl bg-blue-500 p-8 relative overflow-hidden min-h-[280px]">
+            <NoiseTexture opacity={0.35} />
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-xl md:text-2xl font-semibold text-white">
+                  {features[3].title}
+                </h3>
+              </div>
+              <p className="text-white/80 text-sm">{features[3].description}</p>
+              <img src={wave}  className="mt-10"/>
+            </div>
+          </div>
+
+          {/* Multilingual Support Card (using features[4]) */}
+          <div className="rounded-3xl bg-gradient-to-br from-gray-700 to-gray-800 p-8 relative overflow-hidden min-h-[320px]">
+            <NoiseTexture opacity={0.5} />
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-xl md:text-2xl font-semibold text-white">
+                  {features[4].title}
+                </h3>
+              </div>
+              <p className="text-white/70 text-sm">{features[4].description}</p>
             </div>
 
-            <h2 className="text-5xl lg:text-6xl font-light leading-tight tracking-tight">
-              <span className="block text-purple-100">Built to Scale</span>
-            </h2>
+            {/* Flags */}
+            <div className="absolute left-6 right-6 bottom-6 z-10">
+              <div className="flex items-center gap-4">
+                <div className="flex -space-x-3">
+                  {languageFlags.map((f, i) => (
+                    <img
+                      key={i}
+                      src={f.src}
+                      alt={f.alt}
+                      title={f.title}
+                      className="w-10 h-10 rounded-full border-2 border-white/30 shadow-sm object-cover bg-white"
+                    />
+                  ))}
+                </div>
 
-            <p className="text-base md:text-lg text-gray-300 leading-relaxed max-w-xl font-light">
-              From startups to enterprise, our infrastructure grows with you.
-              Handle thousands of calls simultaneously with zero degradation.
-            </p>
-
-            <div className="space-y-4">
-              {features.map((feature, index) => {
-                return (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: 20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    viewport={{ once: true }}
-                    className="flex items-start gap-4 p-5 rounded-xl bg-white/5 backdrop-blur-xl hover:bg-white/10 border border-white/20 transition-all duration-300 shadow-lg shadow-purple-500/5"
-                  >
-                    <div>
-                      <h3 className="font-semibold text-white mb-1">
-                        {feature.title}
-                      </h3>
-                      <p className="text-sm text-slate-400">
-                        {feature.description}
-                      </p>
-                      <DottedGlowBackground
-                        className="pointer-events-none mask-radial-to-90% mask-radial-at-center"
-                        opacity={1}
-                        gap={10}
-                        radius={1.6}
-                        colorLightVar="--color-neutral-500"
-                        glowColorLightVar="--color-neutral-600"
-                        colorDarkVar="--color-neutral-500"
-                        glowColorDarkVar="--color-sky-800"
-                        backgroundOpacity={0}
-                        speedMin={0.3}
-                        speedMax={1.6}
-                        speedScale={1}
-                      />
-                    </div>
-                  </motion.div>
-                );
-              })}
+                <div className="text-white/80 text-sm font-light">
+                  Supports 18+ languages
+                </div>
+              </div>
             </div>
-          </motion.div>
+          </div>
+
+          {/* Real-time Processing / Scalability Card (using features[1]) */}
+          <div className="rounded-3xl bg-green-700 p-8 relative overflow-hidden min-h-[320px]">
+            <NoiseTexture opacity={0.35} />
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-xl md:text-2xl font-semibold text-white">
+                  {features[1].title}
+                </h3>
+              </div>
+              <p className="text-white/80 text-sm max-w-xs">
+                {features[1].description}
+              </p>
+            </div>
+            <img className="absolute bottom-0 h-[77%]" src={realtime} />
+          </div>
+
+          <div className="rounded-3xl bg-orange-600/85 p-8 relative overflow-hidden min-h-[320px]">
+            <NoiseTexture opacity={0.35} />
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-xl md:text-2xl font-semibold text-white">
+                  {features[2].title}
+                </h3>
+              </div>
+              <p className="text-white text-sm mb-6">
+                {features[2].description}
+              </p>
+              <img src={uptime}/>
+            </div>
+          </div>
         </div>
       </div>
     </div>

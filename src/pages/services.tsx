@@ -312,28 +312,28 @@ function Services() {
       <Layout>
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight text-white">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
               Services
             </h1>
-            <p className="text-gray-400">
+            <p className="text-gray-600">
               Manage your organization's services and offerings
             </p>
           </div>
 
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+          <Card className="bg-white border-gray-200">
             <CardContent className="pt-6">
-              <div className="text-center py-16 border-2 border-dashed border-white/10 rounded-lg">
+              <div className="text-center py-16 border-2 border-dashed border-gray-300 rounded-lg">
                 <div className="space-y-3">
-                  <h3 className="text-lg font-medium text-gray-400">
+                  <h3 className="text-lg font-medium text-gray-700">
                     No Departments Found
                   </h3>
-                  <p className="text-sm text-gray-500 max-w-md mx-auto">
+                  <p className="text-sm text-gray-600 max-w-md mx-auto">
                     Create departments first before adding services.
                   </p>
                   <Button
                     variant="outline"
                     asChild
-                    className="mt-4 bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                    className="mt-4 bg-white hover:bg-gray-50 border-gray-200 text-gray-900"
                   >
                     <a href="/WjN2Y1hMTk5saEFneUZZeWZScW1uUjVkRkJoU0E9PQ/departments">
                       Create Departments
@@ -353,27 +353,27 @@ function Services() {
       <div className="w-full  space-y-6">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight text-white">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
               Services
             </h1>
-            <p className="text-gray-400">
+            <p className="text-gray-600">
               Manage your services and customer support offerings
             </p>
           </div>
           <div className="flex items-center gap-4">
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="gap-2 bg-white/10 hover:bg-white/20 border-white/20 text-white">
+                <Button className="gap-2 bg-blue-900/60 hover:bg-blue-900/70 border-blue-800/20 text-white">
                   <Plus className="w-4 h-4" />
                   Add Service
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-neutral-900 backdrop-blur-xl border-white/10 max-w-2xl">
+              <DialogContent className="bg-white border-gray-200 max-w-2xl">
                 <DialogHeader>
-                  <DialogTitle className="text-white">
+                  <DialogTitle className="text-gray-900">
                     Add New Service
                   </DialogTitle>
-                  <DialogDescription className="text-gray-400">
+                  <DialogDescription className="text-gray-600">
                     Create a new service for your organization.
                   </DialogDescription>
                 </DialogHeader>
@@ -382,7 +382,7 @@ function Services() {
                     <div className="space-y-2">
                       <Label
                         htmlFor="add-name"
-                        className="text-sm font-medium text-white"
+                        className="text-sm font-medium text-gray-900"
                       >
                         Service Name
                       </Label>
@@ -391,13 +391,13 @@ function Services() {
                         placeholder="e.g. Technical Support, Customer Service"
                         value={formData.name}
                         onChange={handleFormNameChange}
-                        className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                        className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
                       />
                     </div>
                     <div className="space-y-2">
                       <Label
                         htmlFor="add-department"
-                        className="text-sm font-medium text-white"
+                        className="text-sm font-medium text-gray-900"
                       >
                         Department
                       </Label>
@@ -405,15 +405,15 @@ function Services() {
                         value={formData.departmentId}
                         onValueChange={handleFormDepartmentChange}
                       >
-                        <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                        <SelectTrigger className="bg-white border-gray-200 text-gray-900">
                           <SelectValue placeholder="Select department" />
                         </SelectTrigger>
-                        <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
+                        <SelectContent className="bg-white border-gray-200">
                           {departments.map((department: any) => (
                             <SelectItem
                               key={department.id}
                               value={department.id.toString()}
-                              className="text-white hover:bg-white/10"
+                              className="text-gray-900 hover:bg-gray-50"
                             >
                               {department.name}
                             </SelectItem>
@@ -425,7 +425,7 @@ function Services() {
                   <div className="space-y-2">
                     <Label
                       htmlFor="add-description"
-                      className="text-sm font-medium text-white"
+                      className="text-sm font-medium text-gray-900"
                     >
                       Description
                     </Label>
@@ -434,13 +434,13 @@ function Services() {
                       placeholder="Describe what this service offers"
                       value={formData.description}
                       onChange={handleFormDescriptionChange}
-                      className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                      className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label
                       htmlFor="add-contacts"
-                      className="text-sm font-medium text-white"
+                      className="text-sm font-medium text-gray-900"
                     >
                       Contact Information
                     </Label>
@@ -449,7 +449,7 @@ function Services() {
                       placeholder="e.g. support@company.com, +1-555-0123"
                       value={formData.contacts}
                       onChange={handleFormContactsChange}
-                      className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                      className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
                 </div>
@@ -457,13 +457,13 @@ function Services() {
                   <Button
                     variant="outline"
                     onClick={handleAddDialogClose}
-                    className="bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                    className="bg-white hover:bg-gray-50 border-gray-200 text-gray-900"
                   >
                     Cancel
                   </Button>
                   <Button
                     onClick={createService}
-                    className="bg-white/10 hover:bg-white/20 text-white"
+                    className="bg-blue-900/60 hover:bg-blue-900/70 text-white"
                   >
                     Create Service
                   </Button>
@@ -474,23 +474,23 @@ function Services() {
             <div className="flex justify-end">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button className="gap-2 bg-white/10 hover:bg-white/20 border-white/20 text-white">
+                  <Button className="gap-2 bg-blue-900/60 hover:bg-blue-900/70 border-blue-800/20 text-white">
                     <Filter className="w-4 h-4" />
                     {getSelectedDepartmentName}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-neutral-900  border-white/10 min-w-[200px]">
-                  <DropdownMenuLabel className="text-white">
+                <DropdownMenuContent className="bg-white border-gray-200 min-w-[200px]">
+                  <DropdownMenuLabel className="text-gray-900">
                     Filter by Department
                   </DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuSeparator className="bg-gray-200" />
                   <DropdownMenuRadioGroup
                     value={selectedDepartmentFilter || "all"}
                     onValueChange={handleDepartmentFilterChange}
                   >
                     <DropdownMenuRadioItem
                       value="all"
-                      className="text-white hover:bg-white/10 cursor-pointer"
+                      className="text-gray-900 hover:bg-gray-50 cursor-pointer"
                     >
                       All Departments
                     </DropdownMenuRadioItem>
@@ -498,7 +498,7 @@ function Services() {
                       <DropdownMenuRadioItem
                         key={department.id}
                         value={department.id.toString()}
-                        className="text-white hover:bg-white/10 cursor-pointer"
+                        className="text-gray-900 hover:bg-gray-50 cursor-pointer"
                       >
                         {department.name}
                       </DropdownMenuRadioItem>
@@ -513,12 +513,12 @@ function Services() {
         <div className="">
           <CardContent>
             {services.length === 0 ? (
-              <div className="text-center py-12 border-2 border-dashed border-white/10 rounded-lg">
+              <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
                 <div className="space-y-3">
-                  <h3 className="text-lg font-medium text-gray-400">
+                  <h3 className="text-lg font-medium text-gray-700">
                     No Services Found
                   </h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Create your first service to start managing customer support
                     offerings.
                   </p>
@@ -528,17 +528,17 @@ function Services() {
               <div className="">
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-white/10 hover:bg-white/5">
-                      <TableHead className="text-gray-400">Name</TableHead>
-                      <TableHead className="text-gray-400">
+                    <TableRow className="border-gray-200 hover:bg-gray-50">
+                      <TableHead className="text-gray-700">Name</TableHead>
+                      <TableHead className="text-gray-700">
                         Department
                       </TableHead>
-                      <TableHead className="text-gray-400">
+                      <TableHead className="text-gray-700">
                         Description
                       </TableHead>
-                      <TableHead className="text-gray-400">Contact</TableHead>
-                      <TableHead className="text-gray-400">Issues</TableHead>
-                      <TableHead className="text-right text-gray-400">
+                      <TableHead className="text-gray-700">Contact</TableHead>
+                      <TableHead className="text-gray-700">Issues</TableHead>
+                      <TableHead className="text-right text-gray-700">
                         Actions
                       </TableHead>
                     </TableRow>
@@ -547,23 +547,23 @@ function Services() {
                     {services.map((service) => (
                       <TableRow
                         key={service.id}
-                        className="border-white/10 hover:bg-white/5"
+                        className="border-gray-200 hover:bg-gray-50"
                       >
-                        <TableCell className="font-medium text-white">
+                        <TableCell className="font-medium text-gray-900">
                           {service.name}
                         </TableCell>
                         <TableCell>
                           <Badge
                             variant="secondary"
-                            className="bg-white/10 text-white border-white/20"
+                            className="bg-blue-50 text-blue-900/60 border-blue-900/5"
                           >
                             {departmentMap[service.departmentId]}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-gray-400 max-w-xs truncate">
+                        <TableCell className="text-gray-600 max-w-xs truncate">
                           {service.description}
                         </TableCell>
-                        <TableCell className="text-gray-400">
+                        <TableCell className="text-gray-600">
                           <div className="flex items-center gap-2">
                             <Contact className="w-4 h-4" />
                             <span className="truncate max-w-[150px]">
@@ -574,7 +574,7 @@ function Services() {
                         <TableCell>
                           <Badge
                             variant="outline"
-                            className="bg-white/10 text-white border-white/20"
+                            className="bg-gray-50 text-gray-700 border-gray-200"
                           >
                             {service.commonIssues?.length || 0} issues
                           </Badge>
@@ -585,15 +585,15 @@ function Services() {
                               onClick={() => openEditDialog(service)}
                               variant="outline"
                               size="sm"
-                              className="gap-2 bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                              className="gap-2 bg-white hover:bg-gray-50 border-gray-200"
                             >
-                              <Edit2 className="w-4 h-4" />
+                              <Edit2 className="w-4 h-4 text-gray-900" />
                             </Button>
                             <Button
                               onClick={() => openDeleteDialog(service)}
                               variant="destructive"
                               size="sm"
-                              className="gap-2 bg-red-500/20 hover:bg-red-500/30 border-red-500/30 text-red-400"
+                              className="gap-2 bg-red-50 hover:bg-red-100 border-red-200 text-red-600"
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -614,7 +614,7 @@ function Services() {
                     <PaginationItem>
                       <PaginationPrevious
                         onClick={handlePreviousPage}
-                        className={`cursor-pointer bg-white/5 hover:bg-white/10 border-white/20 text-white ${
+                        className={`cursor-pointer bg-white hover:bg-gray-50 border-gray-200 text-gray-900 ${
                           isPreviousDisabled
                             ? "opacity-50 cursor-not-allowed"
                             : ""
@@ -629,9 +629,9 @@ function Services() {
                           isActive={currentPage === page}
                           className={`cursor-pointer ${
                             currentPage === page
-                              ? "bg-white/20 text-white"
-                              : "bg-white/5 hover:bg-white/10 text-gray-400"
-                          } border-white/20`}
+                              ? "bg-blue-900/60 text-white"
+                              : "bg-white hover:bg-gray-50 text-gray-700"
+                          } border-gray-200`}
                         >
                           {page}
                         </PaginationLink>
@@ -641,7 +641,7 @@ function Services() {
                     <PaginationItem>
                       <PaginationNext
                         onClick={handleNextPage}
-                        className={`cursor-pointer bg-white/5 hover:bg-white/10 border-white/20 text-white ${
+                        className={`cursor-pointer bg-white hover:bg-gray-50 border-gray-200 text-gray-900 ${
                           isNextDisabled ? "opacity-50 cursor-not-allowed" : ""
                         }`}
                       />
@@ -655,10 +655,10 @@ function Services() {
 
         {/* Edit Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="bg-neutral-900 backdrop-blur-xl border-white/10 max-w-2xl">
+          <DialogContent className="bg-white border-gray-200 max-w-2xl">
             <DialogHeader>
-              <DialogTitle className="text-white">Edit Service</DialogTitle>
-              <DialogDescription className="text-gray-400">
+              <DialogTitle className="text-gray-900">Edit Service</DialogTitle>
+              <DialogDescription className="text-gray-600">
                 Update the service information.
               </DialogDescription>
             </DialogHeader>
@@ -667,7 +667,7 @@ function Services() {
                 <div className="space-y-2">
                   <Label
                     htmlFor="edit-name"
-                    className="text-sm font-medium text-white"
+                    className="text-sm font-medium text-gray-900"
                   >
                     Service Name
                   </Label>
@@ -675,13 +675,13 @@ function Services() {
                     id="edit-name"
                     value={formData.name}
                     onChange={handleFormNameChange}
-                    className="bg-white/5 border-white/10 text-white"
+                    className="bg-white border-gray-200 text-gray-900"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label
                     htmlFor="edit-department"
-                    className="text-sm font-medium text-white"
+                    className="text-sm font-medium text-gray-900"
                   >
                     Department
                   </Label>
@@ -689,15 +689,15 @@ function Services() {
                     value={formData.departmentId}
                     onValueChange={handleFormDepartmentChange}
                   >
-                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                    <SelectTrigger className="bg-white border-gray-200 text-gray-900">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
+                    <SelectContent className="bg-white border-gray-200">
                       {departments.map((department: any) => (
                         <SelectItem
                           key={department.id}
                           value={department.id.toString()}
-                          className="text-white hover:bg-white/10"
+                          className="text-gray-900 hover:bg-gray-50"
                         >
                           {department.name}
                         </SelectItem>
@@ -709,7 +709,7 @@ function Services() {
               <div className="space-y-2">
                 <Label
                   htmlFor="edit-description"
-                  className="text-sm font-medium text-white"
+                  className="text-sm font-medium text-gray-900"
                 >
                   Description
                 </Label>
@@ -717,13 +717,13 @@ function Services() {
                   id="edit-description"
                   value={formData.description}
                   onChange={handleFormDescriptionChange}
-                  className="bg-white/5 border-white/10 text-white"
+                  className="bg-white border-gray-200 text-gray-900"
                 />
               </div>
               <div className="space-y-2">
                 <Label
                   htmlFor="edit-contacts"
-                  className="text-sm font-medium text-white"
+                  className="text-sm font-medium text-gray-900"
                 >
                   Contact Information
                 </Label>
@@ -731,7 +731,7 @@ function Services() {
                   id="edit-contacts"
                   value={formData.contacts}
                   onChange={handleFormContactsChange}
-                  className="bg-white/5 border-white/10 text-white"
+                  className="bg-white border-gray-200 text-gray-900"
                 />
               </div>
             </div>
@@ -739,13 +739,13 @@ function Services() {
               <Button
                 variant="outline"
                 onClick={handleEditDialogClose}
-                className="bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                className="bg-white hover:bg-gray-50 border-gray-200 text-gray-900"
               >
                 Cancel
               </Button>
               <Button
                 onClick={updateService}
-                className="bg-white/10 hover:bg-white/20 text-white"
+                className="bg-blue-900/60 hover:bg-blue-900/70 text-white"
               >
                 Save Changes
               </Button>
@@ -758,24 +758,24 @@ function Services() {
           open={isDeleteDialogOpen}
           onOpenChange={setIsDeleteDialogOpen}
         >
-          <AlertDialogContent className="bg-neutral-900 backdrop-blur-xl border-white/10">
+          <AlertDialogContent className="bg-white border-gray-200">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-white">
+              <AlertDialogTitle className="text-gray-900">
                 Delete Service
               </AlertDialogTitle>
-              <AlertDialogDescription className="text-gray-400">
+              <AlertDialogDescription className="text-gray-600">
                 Are you sure you want to delete "{selectedService?.name}"? This
                 action cannot be undone and will also remove all associated
                 common issues.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel className="bg-white/5 hover:bg-white/10 border-white/20 text-white">
+              <AlertDialogCancel className="bg-white hover:bg-gray-50 border-gray-200 text-gray-900">
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={deleteService}
-                className="bg-red-500/20 hover:bg-red-500/30 border-red-500/30 text-red-400"
+                className="bg-red-50 hover:bg-red-100 border-red-200 text-red-600"
               >
                 Delete Service
               </AlertDialogAction>

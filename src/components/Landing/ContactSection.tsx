@@ -8,11 +8,8 @@ import {
   Facebook,
   Instagram,
 } from "lucide-react";
-import { motion } from "framer-motion";
-// import { useState } from "react";
-// import bgVideo from "../../assets/bg-zipp.mp4";
-const bgVideo = "/videos/bg-zipp.mp4";
 import DottedGlowBackground from "../ui/dotted-glow-background";
+import PixelBlast from "../PixelBlast";
 
 function ContactSection() {
   // const [formData, setFormData] = useState({
@@ -31,17 +28,17 @@ function ContactSection() {
     {
       icon: Mail,
       title: "Email us",
-      detail: "hi@affanlabs.com",
+      detail: "cognitlabs@gmail.com",
     },
     {
       icon: Phone,
       title: "Call us",
-      detail: "(501) 123-4567",
+      detail: "+212 691272774",
     },
     {
       icon: MapPin,
       title: "Our location",
-      detail: "Crosby Street, New York, US",
+      detail: "Casablanca, Morocco",
     },
   ];
 
@@ -51,83 +48,68 @@ function ContactSection() {
   // };
 
   return (
-    <div className="relative min-h-screen bg-black overflow-hidden py-24">
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover opacity-50"
-      >
-        <source src={bgVideo} type="video/mp4" />
-      </video>
-
-      <div className="absolute inset-0 bg-black/40" />
+    <div className="relative min-h-screen bg-white overflow-hidden py-24">
+      <div className="absolute inset-0">
+        <PixelBlast
+            variant="circle"
+            pixelSize={3}
+            color="blue"
+            patternScale={2}
+            patternDensity={1.7}
+            pixelSizeJitter={1}
+            enableRipples
+            rippleSpeed={0.4}
+            rippleThickness={0.12}
+            rippleIntensityScale={1.5}
+            liquid
+            liquidStrength={0.12}
+            liquidRadius={1.2}
+            liquidWobbleSpeed={5}
+            speed={1}
+            edgeFade={0.25}
+          />
+      </div>
 
       <div className="container mx-auto px-6 relative z-10 space-y-16">
         <div className="grid lg:grid-cols-2 gap-16 max-w-7xl mx-auto items-stretch">
           <div className="space-y-12">
             <div className="space-y-6">
-              <motion.h2
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                viewport={{ once: true }}
-                className="text-5xl lg:text-6xl font-light leading-tight tracking-tight"
-              >
-                <span className="block text-orange-100">Contact Us</span>
+              <h2 className="text-5xl lg:text-6xl font-light leading-tight tracking-tight">
+                <span className="block text-black">Contact Us</span>
                 <span className="inline-flex items-center gap-3">
-                  <ArrowUpRight className="w-12 h-12 text-orange-50" />
+                  <ArrowUpRight className="w-12 h-12 text-black" />
                 </span>
-              </motion.h2>
+              </h2>
 
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                viewport={{ once: true }}
-                className="text-base md:text-lg text-gray-300 leading-relaxed font-light max-w-xl"
-              >
+              <p className="text-base md:text-lg text-black leading-relaxed font-light max-w-xl">
                 Have a question or need assistance? Reach out to our dedicated
                 support team. We're here to help with any inquiries you may
                 have.
-              </motion.p>
+              </p>
             </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              viewport={{ once: true }}
-              className="space-y-4"
-            >
+            <div className="space-y-4">
               {features.map((feature, index) => (
                 <div key={index} className="flex items-center gap-3">
                   <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center">
-                    <Check className="w-3 h-3 text-gray-400" />
+                    <Check className="w-3 h-3 text-neutral-900" />
                   </div>
-                  <span className="text-gray-400 font-light">{feature}</span>
+                  <span className="text-neutral-800 font-light">{feature}</span>
                 </div>
               ))}
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              viewport={{ once: true }}
-              className="flex gap-4"
-            >
-              <button className="w-10 h-10 rounded-lg bg-white/5 backdrop-blur-xl border border-white/20 flex items-center justify-center hover:bg-white/10 transition-all duration-300">
-                <XIcon className="w-4 h-4 text-gray-400" />
+            <div className="flex gap-4">
+              <button className="w-10 h-10 rounded-lg bg-black backdrop-blur-xl border border-white/20 flex items-center justify-center hover:bg-neutral-700 transition-all duration-300">
+                <XIcon className="w-4 h-4 text-white" />
               </button>
-              <button className="w-10 h-10 rounded-lg bg-white/5 backdrop-blur-xl border border-white/20 flex items-center justify-center hover:bg-white/10 transition-all duration-300">
-                <Facebook className="w-4 h-4 text-gray-400" />
+              <button className="w-10 h-10 rounded-lg bg-black backdrop-blur-xl border border-white/20 flex items-center justify-center hover:bg-neutral-700 transition-all duration-300">
+                <Facebook className="w-4 h-4 text-white" />
               </button>
-              <button className="w-10 h-10 rounded-lg bg-white/5 backdrop-blur-xl border border-white/20 flex items-center justify-center hover:bg-white/10 transition-all duration-300">
-                <Instagram className="w-4 h-4 text-gray-400" />
+              <button className="w-10 h-10 rounded-lg bg-black backdrop-blur-xl border border-white/20 flex items-center justify-center hover:bg-neutral-700 transition-all duration-300">
+                <Instagram className="w-4 h-4 text-white" />
               </button>
-            </motion.div>
+            </div>
           </div>
 
           {/* <motion.div
@@ -181,24 +163,18 @@ function ContactSection() {
           </motion.div> */}
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          viewport={{ once: true }}
-          className="grid md:grid-cols-3 gap-6 max-w-7xl mx-auto"
-        >
+        <div className="grid md:grid-cols-3 gap-6 max-w-7xl mx-auto">
           {contactInfo.map((info, index) => (
             <div
               key={index}
-              className="bg-white/5 backdrop-blur-xl border border-white/20 rounded-2xl p-6 space-y-3 hover:bg-white/10 transition-all duration-300"
+              className="bg-white backdrop-blur-xl border border-neutral-300 rounded-2xl p-6 space-y-3 hover:bg-white/10 transition-all duration-300"
             >
               <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
-                <info.icon className="w-5 h-5 text-gray-400" />
+                <info.icon className="w-5 h-5 text-black" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-sm font-medium text-white">{info.title}</h3>
-                <p className="text-xs text-gray-300 font-light">
+                <h3 className="text-sm font-medium text-black">{info.title}</h3>
+                <p className="text-xs text-black font-light">
                   {info.detail}
                 </p>
               </div>
@@ -207,9 +183,9 @@ function ContactSection() {
                 opacity={1}
                 gap={10}
                 radius={1.6}
-                colorLightVar="--color-neutral-500"
-                glowColorLightVar="--color-neutral-600"
-                colorDarkVar="--color-neutral-500"
+                colorLightVar="--color-blue-500"
+                glowColorLightVar="--color-blue-600"
+                colorDarkVar="--color-blue-500"
                 glowColorDarkVar="--color-sky-800"
                 backgroundOpacity={0}
                 speedMin={0.3}
@@ -218,7 +194,7 @@ function ContactSection() {
               />
             </div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </div>
   );

@@ -301,24 +301,26 @@ function Tickets() {
       <div className="w-full space-y-6">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight text-white">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
               Tickets
             </h1>
-            <p className="text-gray-400">
+            <p className="text-gray-600">
               Manage customer support tickets and issues
             </p>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="gap-2 bg-white/10 hover:bg-white/20 border-white/20 text-white">
+              <Button className="gap-2 bg-blue-900/60 hover:bg-blue-900/70 border-blue-800/20 text-white">
                 <Plus className="w-4 h-4" />
                 Add Ticket
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-neutral-900 backdrop-blur-xl border-white/10 max-w-2xl">
+            <DialogContent className="bg-white border-gray-200 max-w-2xl">
               <DialogHeader>
-                <DialogTitle className="text-white">Add New Ticket</DialogTitle>
-                <DialogDescription className="text-gray-400">
+                <DialogTitle className="text-gray-900">
+                  Add New Ticket
+                </DialogTitle>
+                <DialogDescription className="text-gray-600">
                   Create a new support ticket for a customer.
                 </DialogDescription>
               </DialogHeader>
@@ -326,7 +328,7 @@ function Tickets() {
                 <div className="space-y-2">
                   <Label
                     htmlFor="add-customer"
-                    className="text-sm font-medium text-white"
+                    className="text-sm font-medium text-gray-900"
                   >
                     Customer
                   </Label>
@@ -336,15 +338,15 @@ function Tickets() {
                       setFormData((prev) => ({ ...prev, customerId: value }))
                     }
                   >
-                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                    <SelectTrigger className="bg-white border-gray-200 text-gray-900">
                       <SelectValue placeholder="Select customer" />
                     </SelectTrigger>
-                    <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
+                    <SelectContent className="bg-white border-gray-200">
                       {customers.map((customer: any) => (
                         <SelectItem
                           key={customer.id}
                           value={customer.id.toString()}
-                          className="text-white hover:bg-white/10"
+                          className="text-gray-900 hover:bg-gray-50"
                         >
                           {customer.first_name} {customer.last_name} (
                           {customer.email})
@@ -356,7 +358,7 @@ function Tickets() {
                 <div className="space-y-2">
                   <Label
                     htmlFor="add-common-issue"
-                    className="text-sm font-medium text-white"
+                    className="text-sm font-medium text-gray-900"
                   >
                     Common Issue (Optional)
                   </Label>
@@ -369,15 +371,15 @@ function Tickets() {
                       }))
                     }
                   >
-                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                    <SelectTrigger className="bg-white border-gray-200 text-gray-900">
                       <SelectValue placeholder="Select common issue (optional)" />
                     </SelectTrigger>
-                    <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
+                    <SelectContent className="bg-white border-gray-200">
                       {commonIssues.map((issue: any) => (
                         <SelectItem
                           key={issue.id}
                           value={issue.id.toString()}
-                          className="text-white hover:bg-white/10"
+                          className="text-gray-900 hover:bg-gray-50"
                         >
                           {issue.name}
                         </SelectItem>
@@ -388,7 +390,7 @@ function Tickets() {
                 <div className="space-y-2">
                   <Label
                     htmlFor="add-issue"
-                    className="text-sm font-medium text-white"
+                    className="text-sm font-medium text-gray-900"
                   >
                     Custom Issue Description (Optional)
                   </Label>
@@ -402,7 +404,7 @@ function Tickets() {
                         issue: e.target.value,
                       }))
                     }
-                    className="min-h-[120px] bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                    className="min-h-[120px] bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
                   />
                 </div>
               </div>
@@ -410,13 +412,13 @@ function Tickets() {
                 <Button
                   variant="outline"
                   onClick={handleAddDialogClose}
-                  className="bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                  className="bg-white hover:bg-gray-50 border-gray-200 text-gray-900"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={createTicket}
-                  className="bg-white/10 hover:bg-white/20 text-white"
+                  className="bg-blue-900/60 hover:bg-blue-900/70 text-white"
                   disabled={!formData.customerId}
                 >
                   Create Ticket
@@ -426,15 +428,15 @@ function Tickets() {
           </Dialog>
         </div>
 
-        <div className="bg-transparent border-white/10">
+        <div className="bg-transparent border-gray-200">
           <CardContent>
             {tickets.length === 0 ? (
-              <div className="text-center py-12 border-2 border-dashed border-white/10 rounded-lg">
+              <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
                 <div className="space-y-3">
-                  <h3 className="text-lg font-medium text-gray-400">
+                  <h3 className="text-lg font-medium text-gray-700">
                     No Tickets Found
                   </h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Create your first support ticket to start tracking customer
                     issues.
                   </p>
@@ -443,16 +445,16 @@ function Tickets() {
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow className="border-white/10 hover:bg-white/5">
-                    <TableHead className="text-gray-400">Ticket ID</TableHead>
-                    <TableHead className="text-gray-400">Customer</TableHead>
-                    <TableHead className="text-gray-400">
+                  <TableRow className="border-gray-200 hover:bg-gray-50">
+                    <TableHead className="text-gray-700">Ticket ID</TableHead>
+                    <TableHead className="text-gray-700">Customer</TableHead>
+                    <TableHead className="text-gray-700">
                       Common Issue
                     </TableHead>
-                    <TableHead className="text-gray-400">
-                      Custom Issue
+                    <TableHead className="text-gray-700">
+                      Customer Issue
                     </TableHead>
-                    <TableHead className="text-right text-gray-400">
+                    <TableHead className="text-right text-gray-700">
                       Actions
                     </TableHead>
                   </TableRow>
@@ -461,15 +463,15 @@ function Tickets() {
                   {tickets.map((ticket) => (
                     <TableRow
                       key={ticket.id}
-                      className="border-white/10 hover:bg-white/5"
+                      className="border-gray-200 hover:bg-gray-50"
                     >
-                      <TableCell className="font-medium text-white">
+                      <TableCell className="font-medium text-gray-900">
                         <div className="flex items-center gap-2">
-                          <TicketIcon className="w-4 h-4 text-blue-400" />#
+                          <TicketIcon className="w-4 h-4 text-blue-900/60" />#
                           {ticket.id}
                         </div>
                       </TableCell>
-                      <TableCell className="text-gray-400">
+                      <TableCell className="text-gray-600">
                         <div className="flex items-center gap-2">
                           <User className="w-4 h-4" />
                           {customerMap[ticket.customerId] || "Unknown"}
@@ -479,18 +481,18 @@ function Tickets() {
                         {ticket.commonissueId ? (
                           <Badge
                             variant="secondary"
-                            className="bg-orange-500/20 text-orange-400 border-orange-500/30"
+                            className="bg-orange-50 text-orange-700 border-orange-200"
                           >
                             <AlertCircle className="w-3 h-3 mr-1" />
                             {issueMap[ticket.commonissueId] || "Unknown Issue"}
                           </Badge>
                         ) : (
-                          <span className="text-gray-500 text-sm">-</span>
+                          <span className="text-gray-400 text-sm">-</span>
                         )}
                       </TableCell>
-                      <TableCell className="text-gray-400 max-w-xs truncate">
+                      <TableCell className="text-gray-600 max-w-xs truncate">
                         {ticket.issue || (
-                          <span className="text-gray-500 text-sm">-</span>
+                          <span className="text-gray-400 text-sm">-</span>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
@@ -499,15 +501,15 @@ function Tickets() {
                             onClick={() => openEditDialog(ticket)}
                             variant="outline"
                             size="sm"
-                            className="gap-2 bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                            className="gap-2 bg-white hover:bg-gray-50 border-gray-200"
                           >
-                            <Edit2 className="w-4 h-4" />
+                            <Edit2 className="w-4 h-4 text-gray-900" />
                           </Button>
                           <Button
                             onClick={() => openDeleteDialog(ticket)}
                             variant="destructive"
                             size="sm"
-                            className="gap-2 bg-red-500/20 hover:bg-red-500/30 border-red-500/30 text-red-400"
+                            className="gap-2 bg-red-50 hover:bg-red-100 border-red-200 text-red-600"
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -526,7 +528,7 @@ function Tickets() {
                     <PaginationItem>
                       <PaginationPrevious
                         onClick={handlePreviousPage}
-                        className={`cursor-pointer bg-white/5 hover:bg-white/10 border-white/20 text-white ${
+                        className={`cursor-pointer bg-white hover:bg-gray-50 border-gray-200 text-gray-900 ${
                           isPreviousDisabled
                             ? "opacity-50 cursor-not-allowed"
                             : ""
@@ -541,9 +543,9 @@ function Tickets() {
                           isActive={currentPage === page}
                           className={`cursor-pointer ${
                             currentPage === page
-                              ? "bg-white/20 text-white"
-                              : "bg-white/5 hover:bg-white/10 text-gray-400"
-                          } border-white/20`}
+                              ? "bg-blue-900/60 text-white"
+                              : "bg-white hover:bg-gray-50 text-gray-700"
+                          } border-gray-200`}
                         >
                           {page}
                         </PaginationLink>
@@ -553,7 +555,7 @@ function Tickets() {
                     <PaginationItem>
                       <PaginationNext
                         onClick={handleNextPage}
-                        className={`cursor-pointer bg-white/5 hover:bg-white/10 border-white/20 text-white ${
+                        className={`cursor-pointer bg-white hover:bg-gray-50 border-gray-200 text-gray-900 ${
                           isNextDisabled ? "opacity-50 cursor-not-allowed" : ""
                         }`}
                       />
@@ -567,10 +569,10 @@ function Tickets() {
 
         {/* Edit Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="bg-neutral-900 backdrop-blur-xl border-white/10 max-w-2xl">
+          <DialogContent className="bg-white border-gray-200 max-w-2xl">
             <DialogHeader>
-              <DialogTitle className="text-white">Edit Ticket</DialogTitle>
-              <DialogDescription className="text-gray-400">
+              <DialogTitle className="text-gray-900">Edit Ticket</DialogTitle>
+              <DialogDescription className="text-gray-600">
                 Update the ticket information.
               </DialogDescription>
             </DialogHeader>
@@ -578,7 +580,7 @@ function Tickets() {
               <div className="space-y-2">
                 <Label
                   htmlFor="edit-customer"
-                  className="text-sm font-medium text-white"
+                  className="text-sm font-medium text-gray-900"
                 >
                   Customer
                 </Label>
@@ -588,15 +590,15 @@ function Tickets() {
                     setFormData((prev) => ({ ...prev, customerId: value }))
                   }
                 >
-                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                  <SelectTrigger className="bg-white border-gray-200 text-gray-900">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
+                  <SelectContent className="bg-white border-gray-200">
                     {customers.map((customer: any) => (
                       <SelectItem
                         key={customer.id}
                         value={customer.id.toString()}
-                        className="text-white hover:bg-white/10"
+                        className="text-gray-900 hover:bg-gray-50"
                       >
                         {customer.first_name} {customer.last_name} (
                         {customer.email})
@@ -608,7 +610,7 @@ function Tickets() {
               <div className="space-y-2">
                 <Label
                   htmlFor="edit-common-issue"
-                  className="text-sm font-medium text-white"
+                  className="text-sm font-medium text-gray-900"
                 >
                   Common Issue (Optional)
                 </Label>
@@ -621,15 +623,15 @@ function Tickets() {
                     }))
                   }
                 >
-                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                  <SelectTrigger className="bg-white border-gray-200 text-gray-900">
                     <SelectValue placeholder="Select common issue (optional)" />
                   </SelectTrigger>
-                  <SelectContent className="bg-black/95 backdrop-blur-xl border-white/10">
+                  <SelectContent className="bg-white border-gray-200">
                     {commonIssues.map((issue: any) => (
                       <SelectItem
                         key={issue.id}
                         value={issue.id.toString()}
-                        className="text-white hover:bg-white/10"
+                        className="text-gray-900 hover:bg-gray-50"
                       >
                         {issue.name}
                       </SelectItem>
@@ -640,7 +642,7 @@ function Tickets() {
               <div className="space-y-2">
                 <Label
                   htmlFor="edit-issue"
-                  className="text-sm font-medium text-white"
+                  className="text-sm font-medium text-gray-900"
                 >
                   Custom Issue Description (Optional)
                 </Label>
@@ -653,7 +655,7 @@ function Tickets() {
                       issue: e.target.value,
                     }))
                   }
-                  className="min-h-[120px] bg-white/5 border-white/10 text-white"
+                  className="min-h-[120px] bg-white border-gray-200 text-gray-900"
                 />
               </div>
             </div>
@@ -661,13 +663,13 @@ function Tickets() {
               <Button
                 variant="outline"
                 onClick={handleEditDialogClose}
-                className="bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                className="bg-white hover:bg-gray-50 border-gray-200 text-gray-900"
               >
                 Cancel
               </Button>
               <Button
                 onClick={updateTicket}
-                className="bg-white/10 hover:bg-white/20 text-white"
+                className="bg-blue-900/60 hover:bg-blue-900/70 text-white"
               >
                 Save Changes
               </Button>
@@ -680,23 +682,23 @@ function Tickets() {
           open={isDeleteDialogOpen}
           onOpenChange={setIsDeleteDialogOpen}
         >
-          <AlertDialogContent className="bg-neutral-900 backdrop-blur-xl border-white/10">
+          <AlertDialogContent className="bg-white border-gray-200">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-white">
+              <AlertDialogTitle className="text-gray-900">
                 Delete Ticket
               </AlertDialogTitle>
-              <AlertDialogDescription className="text-gray-400">
+              <AlertDialogDescription className="text-gray-600">
                 Are you sure you want to delete ticket #{selectedTicket?.id}?
                 This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel className="bg-white/5 hover:bg-white/10 border-white/20 text-white">
+              <AlertDialogCancel className="bg-white hover:bg-gray-50 border-gray-200 text-gray-900">
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={deleteTicket}
-                className="bg-red-500/20 hover:bg-red-500/30 border-red-500/30 text-red-400"
+                className="bg-red-50 hover:bg-red-100 border-red-200 text-red-600"
               >
                 Delete Ticket
               </AlertDialogAction>
