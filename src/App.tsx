@@ -5,7 +5,6 @@ import Services from "./pages/services";
 import Issues from "./pages/issues";
 import NotFound from "./pages/notfound";
 import General from "./pages/general";
-import Landing from "./pages/Common/landing";
 import Company from "./pages/Common/company";
 import Pricing from "./pages/Common/pricing";
 import Customers from "./pages/customers";
